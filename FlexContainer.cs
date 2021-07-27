@@ -39,32 +39,7 @@ public class FlexContainer : MonoBehaviour
     public int alignContentIndex;
 
 
-    [Serializable]
-    public class ChildrenData
-    {
-        public RectTransform childRect;
-        public Vector2 childHeightMinMax;
-        public Vector2 childWidthMinMax;
-        public int childOrder;
-        public int childFlexGrow;
-        public int childFlexShrink;
-        public float childFlexBasis;
-        public int flexBasisType;
-        public float definedBasis;
-        public int violateType = 0;
-        public bool isFrozen = false;
-        public Vector2 targetMainSize;
-        public float hypotheticalMainSize;
-        public float hypotheticalCrossSize;
-        public bool autoHeight;
-        public bool autoWidth;
-        public int LineNumber = 1;
-        public bool nestedContainer = false;
-        public Vector4 marginTypes = new Vector4();
-        public Vector4 marginValues = new Vector4();
 
-
-    }
     [Serializable]
     [HideInInspector]
     public class LineData
@@ -86,9 +61,9 @@ public class FlexContainer : MonoBehaviour
     private List<float> flexBasisSize;
 
     [HideInInspector]
-    public Dictionary<int, ChildrenData> childrenDict = new Dictionary<int, ChildrenData>();
+    public Dictionary<int, FlexChildren.ChildrenData> childrenDict = new Dictionary<int, FlexChildren.ChildrenData>();
     [HideInInspector]
-    public Dictionary<int, ChildrenData> containerDict = new Dictionary<int, ChildrenData>();
+    public Dictionary<int, FlexChildren.ChildrenData> containerDict = new Dictionary<int, FlexChildren.ChildrenData>();
     [HideInInspector]
     public string currentChildIndex; //need to make it an int
 
@@ -137,17 +112,14 @@ public class FlexContainer : MonoBehaviour
         childrenDict.Clear();
         childKeys.Clear();
         numberOfChildContainers = 0;
-        float xmin;
-        float xmax;
-        float ymin;
-        float ymax;
+
         for (int i = 0; i < cont.childCount; i++)
         {
             if ((RootContainer && cont.GetChild(i).gameObject.GetComponent<FlexContainer>()) || ChildContainer)
             {
-
-                ChildrenData cd = new ChildrenData();
                 FlexChildren flex = cont.GetChild(i).gameObject.GetComponent<FlexChildren>();
+                FlexChildren.ChildrenData cd = flex.ConstructData();
+                
                 if (flex == null)
                 {
                     cont.GetChild(i).gameObject.AddComponent<FlexChildren>();
@@ -157,50 +129,7 @@ public class FlexContainer : MonoBehaviour
                     numberOfChildContainers++;
                     cd.nestedContainer = true;
                 }
-                cd.childRect = cont.GetChild(i).gameObject.GetComponent<RectTransform>();
-                if (flex.constraintTypeIndex.x == 0)
-                {
-                    ymin = 0;
-                }
-                else
-                {
-                    ymin = flex.containerConstraintsHeightx;
-                }
-                if (flex.constraintTypeIndex.y == 0)
-                {
-                    ymax = Mathf.Infinity;
-                }
-                else
-                {
-                    ymax = flex.containerConstraintsHeighty;
-                }
-                if (flex.constraintTypeIndex.z == 0)
-                {
-                    xmin = 0;
-                }
-                else
-                {
-                    xmin = flex.containerConstraintsWidthx;
-                }
-                if (flex.constraintTypeIndex.w == 0)
-                {
-                    xmax = Mathf.Infinity;
-                }
-                else
-                {
-                    xmax = flex.containerConstraintsWidthy;
-                }
-                cd.childHeightMinMax = new Vector2(ymin, ymax);
-                cd.childWidthMinMax = new Vector2(xmin, xmax);
-                cd.childFlexGrow = flex.childFlexGrow;
-                cd.childFlexShrink = flex.childFlexShrink;
-                // cd.childOrder = flex.childOrder;
-                cd.flexBasisType = flex.childFlexTypeIndex;
-                if (cd.flexBasisType == 2)
-                {
-                    cd.childFlexBasis = flex.flexBasisSize;
-
-                }
+            
                 //Im automating childOrder, need to distinguish between auto and manual
                 cd.childOrder = i;
                 flex.childOrder = i;
@@ -250,7 +179,7 @@ public class FlexContainer : MonoBehaviour
     {
         float remainingPrecent = 100;
 
-        foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
         {
 
             if (k.Value.childFlexBasis != 0)
@@ -373,7 +302,7 @@ public class FlexContainer : MonoBehaviour
 
         listOfTotalWidths.Clear();
 
-        foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
         {
 
             RectTransform rt = k.Value.childRect;
@@ -565,7 +494,7 @@ public class FlexContainer : MonoBehaviour
 
     public void printChildrenDict()
     {
-        foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
         {
             Debug.Log("Name: " + k.Value.childRect.gameObject.name + " Rect: " + k.Value.hypotheticalMainSize);
         }
@@ -607,7 +536,7 @@ public class FlexContainer : MonoBehaviour
             }
 
 
-            foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+            foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
             {
                 if (k.Value.LineNumber == j)
                 {
@@ -626,7 +555,7 @@ public class FlexContainer : MonoBehaviour
                 }
 
             }
-            foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+            foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
             {
                 if (k.Value.LineNumber == j)
                 {
@@ -661,7 +590,7 @@ public class FlexContainer : MonoBehaviour
             {
                 //     Debug.Log("hjere");
                 bool allFrozen = true;
-                foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
                     if (k.Value.isFrozen == false)
                     {
@@ -682,7 +611,7 @@ public class FlexContainer : MonoBehaviour
                 float violationCheck = 0;
                 float clampCheck = 0;
                 float scaledShrink = 0;
-                foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
                     if (k.Value.isFrozen == true)
                     {
@@ -703,7 +632,7 @@ public class FlexContainer : MonoBehaviour
 
                 }
 
-                foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
 
                     if (k.Value.isFrozen)
@@ -813,7 +742,7 @@ public class FlexContainer : MonoBehaviour
                 {
                     if (adjustmentSum > 0)
                     {
-                        foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+                        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                         {
                             if (k.Value.LineNumber == j)
                             {
@@ -828,7 +757,7 @@ public class FlexContainer : MonoBehaviour
                     }
                     else
                     {
-                        foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+                        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                         {
                             if (k.Value.LineNumber == j)
                             {
@@ -844,7 +773,7 @@ public class FlexContainer : MonoBehaviour
                 }
 
             }
-            foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+            foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
             {
                 if (k.Value.LineNumber == j)
                 {
@@ -865,7 +794,7 @@ public class FlexContainer : MonoBehaviour
 
         List<float> crossSizePerLine = new List<float>();
         int lines = GetNumberOfLines();
-        foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
         {
             if (row && alignContentIndex != 3)
             {
@@ -900,7 +829,7 @@ public class FlexContainer : MonoBehaviour
             for (int i = 0; i < lines; i++)
             {
                 float crosssize = 0;
-                foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
                     if (k.Value.LineNumber == (i + 1))
                     {
@@ -914,7 +843,7 @@ public class FlexContainer : MonoBehaviour
             }
         }
 
-        foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
         {
             if (k.Value.nestedContainer && RootContainer)
             {
@@ -939,7 +868,7 @@ public class FlexContainer : MonoBehaviour
         }
         for (int i = 0; i < lines; i++)
         {
-            foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+            foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
             {
                 if (k.Value.LineNumber == (i + 1) && k.Value.LineNumber > 1)
                 {
@@ -974,7 +903,7 @@ public class FlexContainer : MonoBehaviour
         for (int i = 0; i < lines; i++)
         {
             int num = 0;
-            foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+            foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
             {
                 if ((i + 1) == k.Value.LineNumber)
                 {
@@ -1008,7 +937,7 @@ public class FlexContainer : MonoBehaviour
             float secondmarginY = 0;
 
             int maxOrder = GetMaxOrderPerLine(i + 1);
-            foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+            foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
             {
 
                 //Adding margins. So what I'm thinking is we just add margins. problem is what about the objects that come after?
@@ -1154,7 +1083,7 @@ public class FlexContainer : MonoBehaviour
             for (int i = 0; i < lines; i++)
             {
                 float maxCrossSize = 0;
-                foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
                     Debug.Log("here");
                     if (k.Value.LineNumber == (i + 1))
@@ -1185,7 +1114,7 @@ public class FlexContainer : MonoBehaviour
         {
             for (int i = lines; i > 0; i--)
             {
-                foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
                     if (k.Value.LineNumber == (i))
                     {
@@ -1228,7 +1157,7 @@ public class FlexContainer : MonoBehaviour
             total = (cont.rect.height - total) / 2;
             for (int i = 0; i < lines; i++)
             {
-                foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
                     //ezaf   to do this. Get remaining size in height. Divide it by two and give it to the first line LOL ez LMAO
                     if (k.Value.LineNumber == (i + 1))
@@ -1262,7 +1191,7 @@ public class FlexContainer : MonoBehaviour
     public float GetMaxCrossSizePerLine(int line, bool row)
     {
         float maxCrossSize = 0;
-        foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
         {
             if (k.Value.LineNumber == line)
             {
@@ -1277,7 +1206,7 @@ public class FlexContainer : MonoBehaviour
     {
         int maxOrder = 0;
         int lines = GetNumberOfLines();
-        foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
         {
             if (k.Value.LineNumber == line)
             {
@@ -1292,7 +1221,7 @@ public class FlexContainer : MonoBehaviour
     public int GetNumberOfLines()
     {
         int lines = 0;
-        foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
         {
             if (k.Value.LineNumber > lines)
             {
@@ -1333,7 +1262,7 @@ public class FlexContainer : MonoBehaviour
 
           for (int i = 1; i <= NumberOfLines; i++)
           {
-              foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+              foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
               {
                   if (k.Value.LineNumber == i)
                   {
@@ -1406,7 +1335,7 @@ public class FlexContainer : MonoBehaviour
         }
         for (int i = 0; i < NumberOfLines; i++)
         {
-            foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+            foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
             {
                 if (k.Value.LineNumber == (i + 1))
                 {
@@ -1468,7 +1397,7 @@ public class FlexContainer : MonoBehaviour
         }
         for (int i = 0; i < NumberOfLines; i++)
         {
-            foreach (KeyValuePair<int, ChildrenData> k in childrenDict)
+            foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
             {
                 if (k.Value.LineNumber == (i + 1))
                 {
