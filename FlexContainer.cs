@@ -373,7 +373,7 @@ public class FlexContainer : MonoBehaviour
 
                 if (!ChildrenFit(rt, listOfTotalWidths, row, rtPrev) && flexWrapIndex == 0 || k.Value.LineNumber < childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber)
                 {
-
+               
                     rt.SetInsetAndSizeFromParentEdge(edge, 0, inset);
 
 
@@ -1319,7 +1319,7 @@ public class FlexContainer : MonoBehaviour
         if (row)
         {
             //  if (rt.gameObject.name == "Image (2)") Debug.Log("Sibling size: " + sizeOfSiblings[childrenDict[rt.gameObject.GetInstanceID()].LineNumber - 1] + " Hypo size: " + childrenDict[rt.gameObject.GetInstanceID()].hypotheticalMainSize + " Cont size: " + cont.rect.width);
-            if ((sizeOfSiblings[childrenDict[rt.gameObject.GetInstanceID()].LineNumber - 1] + childrenDict[rt.gameObject.GetInstanceID()].hypotheticalMainSize) > (cont.rect.width) || (cont.rect.width - sizeOfSiblings[childrenDict[rt.gameObject.GetInstanceID()].LineNumber - 1]) < 0)
+            if ((sizeOfSiblings[childrenDict[rt.gameObject.GetInstanceID()].LineNumber - 1] + childrenDict[rt.gameObject.GetInstanceID()].hypotheticalMainSize) > (cont.rect.width) || (cont.rect.width - sizeOfSiblings[childrenDict[rt.gameObject.GetInstanceID()].LineNumber - 1]) < 0 || childrenDict[rt.gameObject.GetInstanceID()].LineNumber < childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber)
             {
                 childrenDict[rt.gameObject.GetInstanceID()].LineNumber++;
                 contained = false;
