@@ -89,6 +89,7 @@ public class FlexChildren : MonoBehaviour
         public bool autoWidth;
         public int LineNumber = 1;
         public bool nestedContainer = false;
+        public bool doesFit = false;
         public Vector4 marginTypes = new Vector4();
         public Vector4 marginValues = new Vector4();
 

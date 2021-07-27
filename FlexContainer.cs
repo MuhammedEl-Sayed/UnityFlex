@@ -335,7 +335,7 @@ public class FlexContainer : MonoBehaviour
                     listOfTotalWidths.Add(0);
                 }
             }
-       
+
 
             if (row)
             {
@@ -395,19 +395,19 @@ public class FlexContainer : MonoBehaviour
 
                 }
 
-/*                 if (!ChildrenFit(rt, listOfTotalWidths, row, rtPrev) && flexWrapIndex == 0 || k.Value.LineNumber < childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber)
-                {
-                    nextChildIncrement = true;
-                    rt.SetInsetAndSizeFromParentEdge(edge, 0, inset);
+                /*                 if (!ChildrenFit(rt, listOfTotalWidths, row, rtPrev) && flexWrapIndex == 0 || k.Value.LineNumber < childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber)
+                                {
+                                    nextChildIncrement = true;
+                                    rt.SetInsetAndSizeFromParentEdge(edge, 0, inset);
 
 
-                }
-                else if (!ChildrenFit(rt, listOfTotalWidths, row, rtPrev) && flexWrapIndex == 2)
-                {
-                    rt.SetInsetAndSizeFromParentEdge(edge, 0, inset);
+                                }
+                                else if (!ChildrenFit(rt, listOfTotalWidths, row, rtPrev) && flexWrapIndex == 2)
+                                {
+                                    rt.SetInsetAndSizeFromParentEdge(edge, 0, inset);
 
-                } */
-     
+                                } */
+
 
 
                 rtPrev = rt;
@@ -823,7 +823,7 @@ public class FlexContainer : MonoBehaviour
                 if (k.Value.LineNumber == (i + 1) && k.Value.LineNumber > 1)
                 {
                     if (row) k.Value.childRect.localPosition = new Vector2(k.Value.childRect.localPosition.x, k.Value.childRect.localPosition.y - crossSizeTotals[i]);
-             
+
                 }
             }
         }
@@ -1035,7 +1035,7 @@ public class FlexContainer : MonoBehaviour
                 float maxCrossSize = 0;
                 foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
-          
+
                     if (k.Value.LineNumber == (i + 1))
                     {
                         rt = k.Value.childRect;
@@ -1068,7 +1068,7 @@ public class FlexContainer : MonoBehaviour
                 {
                     if (k.Value.LineNumber == (i))
                     {
-                   
+
                         rt = k.Value.childRect;
 
                         rt.GetLocalCorners(childCorners);
@@ -1077,7 +1077,7 @@ public class FlexContainer : MonoBehaviour
                         if (row && i == lines)
                         {
 
-                          
+
                             float increment = GetMaxCrossSizePerLine(i - 1, row);
                             rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y + rt.sizeDelta.y / 2) + distanceToEdge + increment);
                         }
@@ -1086,7 +1086,7 @@ public class FlexContainer : MonoBehaviour
                             if (row)
                             {
                                 float incrementDistace = GetMaxCrossSizePerLine(i + 1, row);
-                      
+
 
                                 rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y + rt.sizeDelta.y / 2) + distanceToEdge + incrementDistace);
                             }
@@ -1416,36 +1416,46 @@ public class FlexContainer : MonoBehaviour
             total += k.Value.hypotheticalMainSize;
         }
         float numberofLines = total / cont.rect.width;
-  
+
         int roundedLines = Mathf.CeilToInt(numberofLines);
-     // Debug.Log("roundedLines  " + roundedLines + " numberofLines: " + numberofLines);   
+      
+        // Debug.Log("roundedLines  " + roundedLines + " numberofLines: " + numberofLines);   
         if (numberofLines > 1)
         {
             childrenDict = childrenDict.OrderByDescending(x => x.Value.childOrder).ToDictionary(x => x.Key, x => x.Value);
             for (int i = roundedLines; i >= 1; i--)
             {
                 float childrenInLine = 0;
-                if (i==1) childrenInLine = rtFirst.sizeDelta.y;
-            //    Debug.Log(i);
+                if (i == 1) {
+                    childrenInLine = rtFirst.sizeDelta.x;
+             //        Debug.Log("Children in Line " + childrenInLine);
+                }
+
+             
                 foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
-                   if(k.Value.childRect.gameObject.name == "Image (2)") Debug.Log("Children in Line " + childrenInLine + " current size: " +  k.Value.hypotheticalMainSize + " Line num:" +i);
-
-                    if((childrenInLine + k.Value.hypotheticalMainSize) < cont.rect.width && k.Value.LineNumber > i){
+                        if (k.Value.childRect.gameObject.name == "Image (2)") Debug.Log("Children in Line " + childrenInLine + " current size: " + k.Value.hypotheticalMainSize + " Line num:" + i);
+                    if(k.Value.doesFit){
+                        continue;
+                    }
+                    if ((childrenInLine + k.Value.hypotheticalMainSize) < cont.rect.width && !k.Value.doesFit && k.Value.childOrder != 0)
+                    {
+                        k.Value.doesFit = true;
                         childrenInLine += k.Value.hypotheticalMainSize;
                         k.Value.LineNumber = i;
                         k.Value.childRect.SetInsetAndSizeFromParentEdge(edge, 0, inset);
                     }
-
-                    else{
-                        k.Value.LineNumber = Mathf.Clamp(i-1, 1, 100);
+                    else
+                    {
+                         k.Value.doesFit = false;
                         break;
                     }
                 }
             }
+
             childrenDict = childrenDict.OrderBy(x => x.Value.childOrder).ToDictionary(x => x.Key, x => x.Value);
         }
- printChildrenDict();
+        printChildrenDict();
     }
 
     public float ReturnNormalContainerMainSize()
