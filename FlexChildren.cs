@@ -47,27 +47,27 @@ public class FlexChildren : MonoBehaviour
     public float containerConstraintsWidthx;
     [HideInInspector]
     public float containerConstraintsWidthy;
-    
+
     [HideInInspector]
     public int topMarginType;
-        [HideInInspector]
+    [HideInInspector]
     public float topMarginValue;
-    
+
     [HideInInspector]
     public int bottomMarginType;
-        [HideInInspector]
+    [HideInInspector]
     public float bottomMarginValue;
-    
+
     [HideInInspector]
     public int rightMarginType;
-        [HideInInspector]
+    [HideInInspector]
     public float rightMarginValue;
-    
+
     [HideInInspector]
     public int leftMarginType;
-        [HideInInspector]
+    [HideInInspector]
     public float leftMarginValue;
-    
+
     [Serializable]
     public class ChildrenData
     {
@@ -94,6 +94,7 @@ public class FlexChildren : MonoBehaviour
 
 
     }
+    public int line;
     void Awake()
     {
         parentCanvas = transform.root.gameObject;
@@ -105,64 +106,67 @@ public class FlexChildren : MonoBehaviour
     {
         ChildrenData cd = new ChildrenData();
         FlexChildren flex = gameObject.GetComponent<FlexChildren>();
-               
+
         float xmin;
         float xmax;
         float ymin;
         float ymax;
 
         cd.childRect = gameObject.GetComponent<RectTransform>();
-                if (flex.constraintTypeIndex.x == 0)
-                {
-                    ymin = 0;
-                }
-                else
-                {
-                    ymin = flex.containerConstraintsHeightx;
-                }
-                if (flex.constraintTypeIndex.y == 0)
-                {
-                    ymax = Mathf.Infinity;
-                }
-                else
-                {
-                    ymax = flex.containerConstraintsHeighty;
-                }
-                if (flex.constraintTypeIndex.z == 0)
-                {
-                    xmin = 0;
-                }
-                else
-                {
-                    xmin = flex.containerConstraintsWidthx;
-                }
-                if (flex.constraintTypeIndex.w == 0)
-                {
-                    xmax = Mathf.Infinity;
-                }
-                else
-                {
-                    xmax = flex.containerConstraintsWidthy;
-                }
-                cd.childHeightMinMax = new Vector2(ymin, ymax);
-                cd.childWidthMinMax = new Vector2(xmin, xmax);
-                cd.childFlexGrow = flex.childFlexGrow;
-                cd.childFlexShrink = flex.childFlexShrink;
-                // cd.childOrder = flex.childOrder;
-                cd.flexBasisType = flex.childFlexTypeIndex;
-                if (cd.flexBasisType == 2)
-                {
-                    cd.childFlexBasis = flex.flexBasisSize;
+        if (flex.constraintTypeIndex.x == 0)
+        {
+            ymin = 0;
+        }
+        else
+        {
+            ymin = flex.containerConstraintsHeightx;
+        }
+        if (flex.constraintTypeIndex.y == 0)
+        {
+            ymax = Mathf.Infinity;
+        }
+        else
+        {
+            ymax = flex.containerConstraintsHeighty;
+        }
+        if (flex.constraintTypeIndex.z == 0)
+        {
+            xmin = 0;
+        }
+        else
+        {
+            xmin = flex.containerConstraintsWidthx;
+        }
+        if (flex.constraintTypeIndex.w == 0)
+        {
+            xmax = Mathf.Infinity;
+        }
+        else
+        {
+            xmax = flex.containerConstraintsWidthy;
+        }
+        cd.childHeightMinMax = new Vector2(ymin, ymax);
+        cd.childWidthMinMax = new Vector2(xmin, xmax);
+        cd.childFlexGrow = flex.childFlexGrow;
+        cd.childFlexShrink = flex.childFlexShrink;
+        // cd.childOrder = flex.childOrder;
+        cd.flexBasisType = flex.childFlexTypeIndex;
+        if (cd.flexBasisType == 2)
+        {
+            cd.childFlexBasis = flex.flexBasisSize;
 
-                }
-                //Im automating childOrder, need to distinguish between auto and manual
+        }
+        //Im automating childOrder, need to distinguish between auto and manual
 
 
-                cd.autoHeight = flex.autoHeight;
-                cd.autoWidth = flex.autoWidth;
+        cd.autoHeight = flex.autoHeight;
+        cd.autoWidth = flex.autoWidth;
 
-                cd.marginTypes = new Vector4(flex.topMarginType, flex.bottomMarginType, flex.rightMarginType, flex.leftMarginType);
-                cd.marginValues = new Vector4(flex.topMarginValue, flex.bottomMarginValue, flex.rightMarginValue, flex.leftMarginValue);
+        cd.marginTypes = new Vector4(flex.topMarginType, flex.bottomMarginType, flex.rightMarginType, flex.leftMarginType);
+        cd.marginValues = new Vector4(flex.topMarginValue, flex.bottomMarginValue, flex.rightMarginValue, flex.leftMarginValue);
         return cd;
+    }
+    public void ReconstructData(FlexChildren.ChildrenData cd){
+        line = cd.LineNumber;
     }
 }

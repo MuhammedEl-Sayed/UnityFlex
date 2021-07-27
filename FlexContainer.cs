@@ -87,7 +87,8 @@ public class FlexContainer : MonoBehaviour
     public List<int> childKeys = new List<int>();
     [HideInInspector]
     public int numberOfChildContainers;
-
+    private bool firstItem;
+    List<float> listOfTotalWidths = new List<float>();
 
     void Update()
     {
@@ -233,51 +234,8 @@ public class FlexContainer : MonoBehaviour
 
         }
     }
-    public float FindMaxSize(RectTransform rt)
-    {
-        GameObject gm = rt.gameObject;
-        RectTransform oldRect = rt;
-        ContentSizeFitter csf = gm.AddComponent<ContentSizeFitter>();
-        csf.horizontalFit = ContentSizeFitter.FitMode.MinSize;
-        csf.verticalFit = ContentSizeFitter.FitMode.MinSize;
-        float newMax = 0;
-        if (flexDirectionIndex == 0 || flexDirectionIndex == 1)
-        {
-            newMax = rt.sizeDelta.x;
-        }
-        else
-        {
-            newMax = rt.sizeDelta.y;
-        }
 
 
-        DestroyImmediate(csf);
-        return newMax;
-    }
-    public float FindMaxCrossSize(RectTransform rt)
-    {
-
-        GameObject gm = rt.gameObject;
-        RectTransform oldRect = rt;
-        ContentSizeFitter csf = gm.AddComponent<ContentSizeFitter>();
-        csf.horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
-        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        float newMax = 0;
-        if (flexDirectionIndex == 0 || flexDirectionIndex == 1)
-        {
-            newMax = rt.sizeDelta.y;
-        }
-        else
-        {
-            newMax = rt.sizeDelta.x;
-        }
-
-
-        DestroyImmediate(csf);
-        return newMax;
-    }
-    private bool firstItem;
-    List<float> listOfTotalWidths = new List<float>();
     public void PositionItems(bool CheckForNewLines)
     {
         var edge = RectTransform.Edge.Left;
@@ -484,7 +442,7 @@ public class FlexContainer : MonoBehaviour
         MainAxisAlignment(true);
         CrossSizeDetermination(row);
         CrossAsixAlignment(row);
-
+        PassBackToChildren();
 
 
 
@@ -1230,82 +1188,7 @@ public class FlexContainer : MonoBehaviour
         }
         return lines;
     }
-    /*   public float CalculateWorldFreeSpace()
-      {
-
-          Vector3[] childCorners = new Vector3[4];
-
-
-          float freeSpace = 0;
-          if (flexDirectionIndex == 0 || flexDirectionIndex == 1)
-          {
-
-              freeSpace = cont.rect.width;
-          }
-          else if (flexDirectionIndex == 2 || flexDirectionIndex == 3)
-          {
-
-              freeSpace = cont.rect.height;
-          }
-
-
-
-          int NumberOfLines = GetNumberOfLines();
-
-
-          List<float> freeSpacePerLine = new List<float>();
-          for (int i = 0; i < NumberOfLines; i++)
-          {
-              freeSpacePerLine.Add(freeSpace);
-          }
-
-
-          for (int i = 1; i <= NumberOfLines; i++)
-          {
-              foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
-              {
-                  if (k.Value.LineNumber == i)
-                  {
-
-                      if (flexDirectionIndex == 0 || flexDirectionIndex == 1)
-                      {
-
-
-                          freeSpacePerLine[i - 1] = freeSpacePerLine[i - 1] - k.Value.childRect.rect.width;
-                      }
-                      else if (flexDirectionIndex == 2 || flexDirectionIndex == 3)
-                      {
-
-
-                          freeSpacePerLine[i - 1] = freeSpacePerLine[i - 1] - k.Value.childRect.rect.height;
-                      }
-
-                  }
-                  else
-                  {
-                      continue;
-                  }
-
-
-              }
-          }
-          foreach (float f in freeSpacePerLine)
-          {
-
-              if (f < freeSpace)
-              {
-                  if (f < 0)
-                  {
-                      freeSpace = f;
-
-                  }
-                  else
-                      freeSpace = f;
-              }
-          }
-          return freeSpace;
-
-      } */
+    
     public List<float> CalculateWorldFreeSpaceList()
     {
 
@@ -1471,6 +1354,11 @@ public class FlexContainer : MonoBehaviour
         }
         return ncMainSize;
     }
-
+    public void PassBackToChildren(){
+        foreach(KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict){
+            FlexChildren flex = k.Value.childRect.gameObject.GetComponent<FlexChildren>();
+            flex.ReconstructData(k.Value);
+        }
+    }
 
 }
