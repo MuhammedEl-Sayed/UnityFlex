@@ -258,8 +258,6 @@ public class FlexContainer : MonoBehaviour
 
         }
 
-        listOfTotalWidths.Clear();
-        bool nextChildIncrement = false;
         foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
         {
 
@@ -326,16 +324,6 @@ public class FlexContainer : MonoBehaviour
                     break;
             }
 
-            int lines = GetNumberOfLines();
-            if (listOfTotalWidths.Count < lines)
-            {
-                int different = lines - listOfTotalWidths.Count;
-                for (int i = 0; i < different; i++)
-                {
-                    listOfTotalWidths.Add(0);
-                }
-            }
-
 
             if (row)
             {
@@ -395,21 +383,6 @@ public class FlexContainer : MonoBehaviour
 
                 }
 
-                /*                 if (!ChildrenFit(rt, listOfTotalWidths, row, rtPrev) && flexWrapIndex == 0 || k.Value.LineNumber < childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber)
-                                {
-                                    nextChildIncrement = true;
-                                    rt.SetInsetAndSizeFromParentEdge(edge, 0, inset);
-
-
-                                }
-                                else if (!ChildrenFit(rt, listOfTotalWidths, row, rtPrev) && flexWrapIndex == 2)
-                                {
-                                    rt.SetInsetAndSizeFromParentEdge(edge, 0, inset);
-
-                                } */
-
-
-
                 rtPrev = rt;
                 rt.GetLocalCorners(childCorners);
 
@@ -430,11 +403,12 @@ public class FlexContainer : MonoBehaviour
             row = false;
         }
         PositionItems(true);
+
         ResolveFlexibleLengths();
         MainAxisAlignment(true);
         CrossSizeDetermination(row);
         CrossAsixAlignment(row);
-        PassBackToChildren();
+
 
 
 
@@ -823,7 +797,7 @@ public class FlexContainer : MonoBehaviour
                 if (k.Value.LineNumber == (i + 1) && k.Value.LineNumber > 1)
                 {
                     if (row) k.Value.childRect.localPosition = new Vector2(k.Value.childRect.localPosition.x, k.Value.childRect.localPosition.y - crossSizeTotals[i]);
-
+                    if (i > 2) Debug.Log(crossSizeTotals[i]);
                 }
             }
         }
@@ -927,6 +901,10 @@ public class FlexContainer : MonoBehaviour
                 {
                     float fixFirst = 1;
                     rt = k.Value.childRect;
+
+                    k.Value.childRect.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, rt.rect.width);
+
+
                     if (firstItem)
                     {
                         rtPrev = rt;
@@ -1354,63 +1332,12 @@ public class FlexContainer : MonoBehaviour
     }
 
     int previousLineNumber = 1;
-    public bool ChildrenFit(RectTransform rt, List<float> sizeOfSiblings, bool row, RectTransform rtPrev)
-    {
-        bool contained = true;
 
-        //Keep in mind that everything that comes before will be on the previous line anyway.
-        //Just iterate through children until i reach the order? no we reverse the order.
-        //So how about we juuuuuuust go ahead and pass a float from the positioning system. that makes somse sense
-        //since we already organize the way its done there
-        List<float> freeSpacePerLine = CalculateWorldFreeSpaceListv3(row);
-        //Problem now is that the og line number is 1. Each time this is run it defaults it back to 1.
-        if (row)
-        {
-            if ((sizeOfSiblings[childrenDict[rt.gameObject.GetInstanceID()].LineNumber - 1] + childrenDict[rt.gameObject.GetInstanceID()].hypotheticalMainSize) > (cont.rect.width) || (cont.rect.width - sizeOfSiblings[childrenDict[rt.gameObject.GetInstanceID()].LineNumber - 1]) < 0 || childrenDict[rt.gameObject.GetInstanceID()].LineNumber < childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber)
-            {
-                previousLineNumber++;
-
-                if (childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber > childrenDict[rt.gameObject.GetInstanceID()].LineNumber && childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber > 2)
-                {
-                    childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber = childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber - 1;
-
-                }
-                if (childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber > 1 && (freeSpacePerLine[childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber - 1] - childrenDict[rt.gameObject.GetInstanceID()].hypotheticalMainSize) < 0)
-                {
-                    childrenDict[rt.gameObject.GetInstanceID()].LineNumber = childrenDict[rtPrev.gameObject.GetInstanceID()].LineNumber + 1;
-                }
-                else childrenDict[rt.gameObject.GetInstanceID()].LineNumber = previousLineNumber; ;
-                contained = false;
-            }
-
-        }
-        else
-        {
-            //   Debug.Log(rt.gameObject.name + childrenDict[rt.gameObject.GetInstanceID()].hypotheticalMainSize);
-            if ((sizeOfSiblings[childrenDict[rt.gameObject.GetInstanceID()].LineNumber - 1] + childrenDict[rt.gameObject.GetInstanceID()].hypotheticalMainSize) > (cont.rect.height) || sizeOfSiblings[childrenDict[rt.gameObject.GetInstanceID()].LineNumber - 1] < 0)
-            {
-                childrenDict[rt.gameObject.GetInstanceID()].LineNumber++;
-                contained = false;
-            }
-
-        }
-
-        return contained;
-
-    }
-
-    //How about I make a new function:
-    /*
-    How would it look? Runs after all things are positioned. Divide main container size by total size of items.
-    If that number is less than or = to one, then we gucci. Else that number ceilinged is the number of lines.
-    Flip order
-    How do I figure out how many I can fit per line? Skip first item. Then add items until they grow bigger than container. That is the next time.
-    Repeat until all lines are done.
-    */
 
     public void CalculateChildrenLines(RectTransform.Edge edge, float inset, RectTransform rtFirst)
     {
         float total = 0;
+        bool first = true;
         foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
         {
             total += k.Value.hypotheticalMainSize;
@@ -1418,62 +1345,84 @@ public class FlexContainer : MonoBehaviour
         float numberofLines = total / cont.rect.width;
 
         int roundedLines = Mathf.CeilToInt(numberofLines);
-      
-        // Debug.Log("roundedLines  " + roundedLines + " numberofLines: " + numberofLines);   
+
+        //So I think the way to do this is in clumps.
+        //problem was it wasn't doing the first line right, because it was trying its best to fill the last line first.
+        //So maybe, we just iterate through, and add hypothetical main sizes until it is larger than container.
+        //Once we are done, we can assign them to i.
+        //restart the loop, and do the same until we run out of items
+
+
         if (numberofLines > 1)
         {
-            childrenDict = childrenDict.OrderByDescending(x => x.Value.childOrder).ToDictionary(x => x.Key, x => x.Value);
-            for (int i = roundedLines; i >= 1; i--)
-            {
-                float childrenInLine = 0;
-                if (i == 1) {
-                    childrenInLine = rtFirst.sizeDelta.x;
-             //        Debug.Log("Children in Line " + childrenInLine);
-                }
 
-             
+            for (int i = 1; i <= roundedLines; i++)
+            {
+                float TotalPerLine = 0;
+                if (i == 1) TotalPerLine = rtFirst.sizeDelta.x;
+                else TotalPerLine = 0;
                 foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
-                        if (k.Value.childRect.gameObject.name == "Image (2)") Debug.Log("Children in Line " + childrenInLine + " current size: " + k.Value.hypotheticalMainSize + " Line num:" + i);
-                    if(k.Value.doesFit){
+                    //   if (k.Value.childRect.gameObject.name == "Image (2)") k.Value.childRect.SetInsetAndSizeFromParentEdge(edge, 0, inset);
+                    if (k.Value.childOrder == 0)
+                    {
                         continue;
                     }
-                    if ((childrenInLine + k.Value.hypotheticalMainSize) < cont.rect.width && !k.Value.doesFit && k.Value.childOrder != 0)
+
+                    if (!k.Value.doesFit && (k.Value.hypotheticalMainSize + TotalPerLine < cont.rect.width))
                     {
-                        k.Value.doesFit = true;
-                        childrenInLine += k.Value.hypotheticalMainSize;
+                        TotalPerLine += k.Value.hypotheticalMainSize;
                         k.Value.LineNumber = i;
-                        k.Value.childRect.SetInsetAndSizeFromParentEdge(edge, 0, inset);
+                        k.Value.doesFit = true;
+       
                     }
+
                     else
                     {
-                         k.Value.doesFit = false;
+
                         break;
                     }
+
+                }
+
+                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
+                {
+                    if (k.Value.childOrder == 0)
+                    {
+                        continue;
+                    }
+                    if (!k.Value.doesFit)
+                    {
+
+                        k.Value.LineNumber = i + 1;
+           
+
+                    }
+
                 }
             }
+            for (int i = 2; i <= roundedLines; i++)
+            {
 
-            childrenDict = childrenDict.OrderBy(x => x.Value.childOrder).ToDictionary(x => x.Key, x => x.Value);
+                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
+                {
+                    if (k.Value.LineNumber == i)
+                    {
+                        k.Value.childRect.SetInsetAndSizeFromParentEdge(edge, 0, inset);
+                        break;
+
+                    }
+
+
+
+                }
+
+            }
         }
         printChildrenDict();
     }
 
-    public float ReturnNormalContainerMainSize()
-    {
-        float ncMainSize = 0;
-        if (flexDirectionIndex == 0 || flexDirectionIndex == 1)
-        {
-            ncMainSize = cont.sizeDelta.x;
-        }
-        else
-        {
-            ncMainSize = cont.sizeDelta.y;
-        }
-        return ncMainSize;
-    }
-    public void PassBackToChildren()
-    {
 
-    }
+
 
 }
