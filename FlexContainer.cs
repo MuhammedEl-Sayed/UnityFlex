@@ -216,7 +216,6 @@ public class FlexContainer : MonoBehaviour
 
                     k.Value.hypotheticalCrossSize = Mathf.Clamp(ContentSizeCalc.DetermineContentSize(k.Value.childRect.gameObject, false), k.Value.childHeightMinMax.x, k.Value.childHeightMinMax.y);
 
-
                     k.Value.hypotheticalMainSize = Mathf.Clamp(k.Value.definedBasis, k.Value.childWidthMinMax.x, k.Value.childWidthMinMax.y);
 
                 }
@@ -225,7 +224,7 @@ public class FlexContainer : MonoBehaviour
                     //  k.Value.definedBasis = (cont.sizeDelta.y * ((remainingPrecent / 100) / cont.childCount));
                     k.Value.definedBasis = ContentSizeCalc.DetermineContentSize(k.Value.childRect.gameObject, false);
                     k.Value.hypotheticalCrossSize = Mathf.Clamp(ContentSizeCalc.DetermineContentSize(k.Value.childRect.gameObject, true), k.Value.childWidthMinMax.x, k.Value.childWidthMinMax.y);
-
+                   
                     k.Value.hypotheticalMainSize = Mathf.Clamp(k.Value.definedBasis, k.Value.childHeightMinMax.x, k.Value.childHeightMinMax.y);
 
                 }
@@ -324,19 +323,19 @@ public class FlexContainer : MonoBehaviour
                     break;
             }
 
+            /* 
+                        if (row)
+                        {
 
-            if (row)
-            {
-
-                rt.sizeDelta = new Vector2(k.Value.hypotheticalMainSize, rt.sizeDelta.y);
-                listOfTotalWidths[k.Value.LineNumber - 1] += k.Value.hypotheticalMainSize;
-            }
-            else
-            {
-                rt.sizeDelta = new Vector2(rt.sizeDelta.x, k.Value.hypotheticalMainSize);
-                listOfTotalWidths[k.Value.LineNumber - 1] += rt.sizeDelta.y;
-            }
-
+                            rt.sizeDelta = new Vector2(k.Value.hypotheticalMainSize, rt.sizeDelta.y);
+                            listOfTotalWidths[k.Value.LineNumber - 1] += k.Value.hypotheticalMainSize;
+                        }
+                        else
+                        {
+                            rt.sizeDelta = new Vector2(rt.sizeDelta.x, k.Value.hypotheticalMainSize);
+                            listOfTotalWidths[k.Value.LineNumber - 1] += rt.sizeDelta.y;
+                        }
+             */
             if (firstItem)
             {
                 rt.localPosition = new Vector3(0, 0, 0);
@@ -391,8 +390,8 @@ public class FlexContainer : MonoBehaviour
 
 
         }
-
-        CalculateChildrenLines(edge, inset, rtFirst, row);
+        if (flexWrapIndex == 0 || flexWrapIndex == 2)
+            CalculateChildrenLines(edge, inset, rtFirst, row);
     }
 
     public void MainSizeDetermination()
@@ -402,10 +401,10 @@ public class FlexContainer : MonoBehaviour
         {
             row = false;
         }
-        PositionItems(true);
+        PositionItems(row);
 
-        ResolveFlexibleLengths();
-        MainAxisAlignment(true);
+        ResolveFlexibleLengths(row);
+        MainAxisAlignment(row);
         CrossSizeDetermination(row);
         CrossAsixAlignment(row);
 
@@ -423,11 +422,11 @@ public class FlexContainer : MonoBehaviour
             Debug.Log("Name: " + k.Value.childRect.gameObject.name + " LineNumber: " + k.Value.LineNumber);
         }
     }
-    public void ResolveFlexibleLengths()
+    public void ResolveFlexibleLengths(bool row)
     {
         int numberOfLines = GetNumberOfLines();
 
-        List<float> freeSpacePerLine = CalculateWorldFreeSpaceList();
+        List<float> freeSpacePerLine = CalculateWorldFreeSpaceList(row);
         for (int j = 1; j <= numberOfLines; j++)
         {
 
@@ -526,7 +525,7 @@ public class FlexContainer : MonoBehaviour
                     break;
                 }
 
-                freeSpacePerLine = CalculateWorldFreeSpaceList();
+                freeSpacePerLine = CalculateWorldFreeSpaceList(row);
                 int violations = 0;
                 float remainingFreeSpace = 0;
                 float sumOfFlexValues = 0;
@@ -725,7 +724,8 @@ public class FlexContainer : MonoBehaviour
                 k.Value.childRect.sizeDelta = new Vector2(k.Value.childRect.sizeDelta.x, k.Value.hypotheticalCrossSize);
             }
             else if (row && alignContentIndex == 3) k.Value.childRect.sizeDelta = new Vector2(k.Value.childRect.sizeDelta.x, cont.rect.height / lines);
-            else k.Value.childRect.sizeDelta = new Vector2(k.Value.hypotheticalCrossSize, k.Value.childRect.sizeDelta.y);
+            else if (!row && alignContentIndex != 3) k.Value.childRect.sizeDelta = new Vector2(k.Value.hypotheticalCrossSize, k.Value.childRect.sizeDelta.y);
+            else if (!row && alignContentIndex == 3) k.Value.childRect.sizeDelta = new Vector2(cont.rect.width / lines, k.Value.childRect.sizeDelta.x);
         }
         for (int i = 0; i < lines; i++) crossSizePerLine.Add(0);
         if (lines == 1)
@@ -790,17 +790,7 @@ public class FlexContainer : MonoBehaviour
             }
             else crossSizeTotals[i] = crossSizeTotals[i] + crossSizePerLine[i];
         }
-        for (int i = 0; i < lines; i++)
-        {
-            foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
-            {
-                if (k.Value.LineNumber == (i + 1) && k.Value.LineNumber > 1)
-                {
-                    if (row) k.Value.childRect.localPosition = new Vector2(k.Value.childRect.localPosition.x, k.Value.childRect.localPosition.y - crossSizeTotals[i]);
-                    //     if (i > 2) Debug.Log(crossSizeTotals[i]);
-                }
-            }
-        }
+
         /*
         Handle 'align-content: stretch'. If the flex container has a definite cross size, align-content is stretch, and the sum of the flex lines' cross sizes is less than the flex container’s inner cross size, increase the cross size of each flex line by equal amounts such that the sum of their cross sizes exactly equals the flex container’s inner cross size.
         Collapse visibility:collapse items. If any flex items have visibility: collapse, note the cross size of the line they’re in as the item’s strut size, and restart layout from the beginning.
@@ -860,7 +850,6 @@ public class FlexContainer : MonoBehaviour
             float secondmarginX = 0;
             float secondmarginY = 0;
 
-            int maxOrder = GetMaxOrderPerLine(i + 1);
             foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
             {
 
@@ -895,16 +884,74 @@ public class FlexContainer : MonoBehaviour
                 }
 
 
-
+                RectTransform.Edge edge = RectTransform.Edge.Left;
+                float inset = 0;
 
                 if (k.Value.LineNumber == (i + 1))
                 {
                     float fixFirst = 1;
                     rt = k.Value.childRect;
 
-                    k.Value.childRect.SetInsetAndSizeFromParentEdge(RectTransform.Edge.Left, 0, rt.rect.width);
+                    switch (flexDirectionIndex)
+                    {
+                        case 0:
+                            if (justifyContentIndex == 1)
+                            {
+                                edge = RectTransform.Edge.Right;
 
+                            }
+                            else
+                            {
+                                edge = RectTransform.Edge.Left;
+                            }
 
+                            inset = rt.rect.width;
+                            row = true;
+                            break;
+                        case 1:
+                            if (justifyContentIndex == 1)
+                            {
+                                edge = RectTransform.Edge.Left;
+
+                            }
+                            else
+                            {
+                                edge = RectTransform.Edge.Right;
+                            }
+
+                            inset = rt.rect.width;
+                            row = true;
+                            break;
+                        case 2:
+                            if (justifyContentIndex == 1)
+                            {
+                                edge = RectTransform.Edge.Bottom;
+
+                            }
+                            else
+                            {
+                                edge = RectTransform.Edge.Top;
+                            }
+
+                            inset = rt.rect.height;
+                            row = false;
+                            break;
+                        case 3:
+                            if (justifyContentIndex == 1)
+                            {
+                                edge = RectTransform.Edge.Top;
+
+                            }
+                            else
+                            {
+                                edge = RectTransform.Edge.Bottom;
+                            }
+                            inset = rt.rect.height;
+                            row = false;
+                            break;
+                    }
+
+                    k.Value.childRect.SetInsetAndSizeFromParentEdge(edge, 0, inset);
                     if (firstItem)
                     {
                         rtPrev = rt;
@@ -912,29 +959,6 @@ public class FlexContainer : MonoBehaviour
 
                         fixFirst = 0;
                         j = 0.5f;
-                        if (flexDirectionIndex == 0)
-                        {
-                            secondmarginX = rightMargin;
-                            secondmarginY = 0;
-                        }
-                        else if (flexDirectionIndex == 1)
-                        {
-                            secondmarginX = leftMargin;
-                            secondmarginY = 0;
-                        }
-                        else if (flexDirectionIndex == 2)
-                        {
-                            secondmarginX = 0;
-                            secondmarginY = bottomMargin;
-                        }
-
-                        else if (flexDirectionIndex == 3)
-                        {
-                            secondmarginX = 0;
-                            secondmarginY = topMargin;
-                        }
-
-                        //continue;
 
                     }
                     else j = 1;
@@ -951,17 +975,17 @@ public class FlexContainer : MonoBehaviour
                     }
                     else if ((flexDirectionIndex == 1 && justifyContentIndex != 1) || (flexDirectionIndex == 0 && justifyContentIndex == 1))
                     {
-                        k.Value.childRect.localPosition = new Vector2(rtPrev.localPosition.x - ((rtPrev.sizeDelta.x / 2 * fixFirst) + (rt.sizeDelta.x / 2 * fixFirst)) + firstmarginX + secondmarginX, k.Value.childRect.localPosition.y + firstmarginY + secondmarginY);
+                        k.Value.childRect.localPosition = new Vector2(rtPrev.localPosition.x - ((rtPrev.sizeDelta.x / 2 * fixFirst) + (rt.sizeDelta.x / 2 * fixFirst)) + firstmarginX + secondmarginX - marginForEach * j, k.Value.childRect.localPosition.y + firstmarginY + secondmarginY);
 
                     }
                     else if ((flexDirectionIndex == 2 && justifyContentIndex != 1) || (flexDirectionIndex == 3 && justifyContentIndex == 1))
                     {
-                        k.Value.childRect.localPosition = new Vector2(k.Value.childRect.localPosition.x + firstmarginX + secondmarginX, rtPrev.localPosition.y - ((rtPrev.sizeDelta.y / 2 * fixFirst) + (rt.sizeDelta.y / 2 * fixFirst)) + firstmarginY + secondmarginY);
+                        k.Value.childRect.localPosition = new Vector2(k.Value.childRect.localPosition.x + firstmarginX + secondmarginX, rtPrev.localPosition.y - ((rtPrev.sizeDelta.y / 2 * fixFirst) + (rt.sizeDelta.y / 2 * fixFirst)) + firstmarginY + secondmarginY - marginForEach * j);
 
                     }
                     else if ((flexDirectionIndex == 3 && justifyContentIndex != 1) || (flexDirectionIndex == 2 && justifyContentIndex == 1))
                     {
-                        k.Value.childRect.localPosition = new Vector2(k.Value.childRect.localPosition.x + firstmarginX + secondmarginX, rtPrev.localPosition.y + ((rtPrev.sizeDelta.y / 2 * fixFirst) + (rt.sizeDelta.y / 2 * fixFirst)) + firstmarginY + secondmarginY);
+                        k.Value.childRect.localPosition = new Vector2(k.Value.childRect.localPosition.x + firstmarginX + secondmarginX, rtPrev.localPosition.y + ((rtPrev.sizeDelta.y / 2 * fixFirst) + (rt.sizeDelta.y / 2 * fixFirst)) + firstmarginY + secondmarginY + marginForEach * j);
 
                     }
                     if (flexDirectionIndex == 0)
@@ -1008,47 +1032,53 @@ public class FlexContainer : MonoBehaviour
         RectTransform rt = null;
         if (alignContentIndex == 0 || alignContentIndex == 3)
         {
+            float maxCrossSizePerLine = 0;
             for (int i = 0; i < lines; i++)
             {
-                float maxCrossSize = 0;
+                maxCrossSizePerLine += GetMaxCrossSizePerLine(i + 1, row);
                 foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
 
                     if (k.Value.LineNumber == (i + 1))
                     {
+
                         rt = k.Value.childRect;
                         rt.GetLocalCorners(childCorners);
                         cont.GetLocalCorners(childCorners);
                         //So what I'm thinking of doing is getting the cross size distance via local corners. Then change it based on setting.
                         if (i == 0)
                         {
+                            float distanceToEdge = parentCorners[1].y - childCorners[0].y;
                             if (row)
                             {
-                                float distanceToEdge = parentCorners[1].y - childCorners[1].y;
 
-                                rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y - rt.sizeDelta.y / 2) - distanceToEdge);
+
+                                rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y - rt.sizeDelta.y / 2) + distanceToEdge);
                             }
                             else
                             {
-                                float distanceToEdge = parentCorners[1].x - childCorners[1].x;
-                                rt.localPosition = new Vector2((rt.localPosition.x - rt.sizeDelta.x / 2) - distanceToEdge, rt.localPosition.y);
+                                distanceToEdge = parentCorners[1].x - childCorners[0].x;
+                                rt.localPosition = new Vector2((rt.localPosition.x + rt.sizeDelta.x / 2) - distanceToEdge, rt.localPosition.y);
 
                             }
 
                         }
                         else if (i > 0)
                         {
+                            float distanceToEdge = parentCorners[1].y - childCorners[1].y;
+                            //float incrementDistace = GetMaxCrossSizePerLine(i, row);
                             if (row)
                             {
-                                float distanceToEdge = parentCorners[1].y - childCorners[1].y;
-                                float incrementDistace = GetMaxCrossSizePerLine(i, row);
-                                rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y + rt.sizeDelta.y / 2) - (distanceToEdge) - incrementDistace);
+                           //     if (rt.gameObject.name == "Text (TMP) (1)") Debug.Log("Distance: " + distanceToEdge + " PreviousItemCross: " + maxCrossSizePerLine);
+
+                                rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y - rt.sizeDelta.y / 2) - (distanceToEdge) - maxCrossSizePerLine);
                             }
                             else
                             {
-                                float distanceToEdge = parentCorners[1].x - childCorners[1].x;
-                                float incrementDistace = GetMaxCrossSizePerLine(i, row);
-                                rt.localPosition = new Vector2((rt.localPosition.x + rt.sizeDelta.x / 2) - (distanceToEdge) - incrementDistace, rt.localPosition.y);
+                                distanceToEdge = parentCorners[1].x - childCorners[0].x;
+                             
+                               // Debug.Log(distanceToEdge + " " + maxCrossSizePerLine);
+                                rt.localPosition = new Vector2((rt.localPosition.x + rt.sizeDelta.x / 2) - (distanceToEdge - maxCrossSizePerLine), rt.localPosition.y);
                             }
 
 
@@ -1056,12 +1086,16 @@ public class FlexContainer : MonoBehaviour
 
                     }
                 }
+              
             }
         }
         if (alignContentIndex == 1)
         {
+            float maxCrossSizePerLine = 0;
+            RectTransform rtPrev = null;
             for (int i = lines; i > 0; i--)
             {
+                maxCrossSizePerLine += GetMaxCrossSizePerLine(i + 1, row);
                 foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
                     if (k.Value.LineNumber == (i))
@@ -1076,33 +1110,39 @@ public class FlexContainer : MonoBehaviour
                         else distanceToEdge = parentCorners[1].x - childCorners[1].x;
                         if (i == lines)
                         {
-                            float increment = GetMaxCrossSizePerLine(i - 1, row);
                             if (row)
                             {
 
-                                rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y + rt.sizeDelta.y / 2) + distanceToEdge + increment);
+                                rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y + rt.sizeDelta.y / 2) + distanceToEdge);
                             }
                             else
                             {
-                                rt.localPosition = new Vector2((rt.localPosition.x + rt.sizeDelta.y / 2) + distanceToEdge + increment, rt.localPosition.y);
+                                rt.localPosition = new Vector2((rt.localPosition.x - rt.sizeDelta.x / 2) + distanceToEdge, rt.localPosition.y);
                             }
+                            rtPrev = rt;
 
                         }
-                        else if (lines > 1)
+                        else
                         {
-                            float incrementDistace = GetMaxCrossSizePerLine(i + 1, row);
+
                             if (row)
                             {
-                                rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y + rt.sizeDelta.y / 2) + distanceToEdge + incrementDistace);
+                                rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y + rt.sizeDelta.y / 2) + distanceToEdge + maxCrossSizePerLine);
                             }
                             else
                             {
-                                rt.localPosition = new Vector2((rt.localPosition.x + rt.sizeDelta.x/ 2) + distanceToEdge + incrementDistace, rt.localPosition.y);
+
+                                rt.localPosition = new Vector2((rt.localPosition.x - rt.sizeDelta.x / 2) - maxCrossSizePerLine + distanceToEdge, rt.localPosition.y);
+
                             }
                         }
+
 
                     }
+
                 }
+
+
             }
         }
         if (alignContentIndex == 2)
@@ -1112,9 +1152,12 @@ public class FlexContainer : MonoBehaviour
             {
                 total += GetMaxCrossSizePerLine(i + 1, row);
             }
-            total = (cont.rect.height - total) / 2;
+            if (row) total = (cont.rect.height - total) / 2;
+            else total = (cont.rect.width - total) / 2;
+            float maxCrossSizePerLine = 0;
             for (int i = 0; i < lines; i++)
             {
+                maxCrossSizePerLine += GetMaxCrossSizePerLine(i + 1, row);
                 foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
                     //ezaf   to do this. Get remaining size in height. Divide it by two and give it to the first line LOL ez LMAO
@@ -1134,17 +1177,27 @@ public class FlexContainer : MonoBehaviour
                             }
                             else
                             {
-                                float distanceToEdge = (parentCorners[1].x + total) - childCorners[1].x;
-                                rt.localPosition = new Vector2((rt.localPosition.x- rt.sizeDelta.x / 2) - distanceToEdge, rt.localPosition.y );
+                                float distanceToEdge = (parentCorners[1].x - total) - childCorners[0].x;
+                                rt.localPosition = new Vector2((rt.localPosition.x + rt.sizeDelta.x / 2) - distanceToEdge, rt.localPosition.y);
                             }
 
 
                         }
                         else if (i > 0)
                         {
-                            float distanceToEdge = (parentCorners[1].y + total) - childCorners[1].y;
-                            float incrementDistace = GetMaxCrossSizePerLine(i + 1, row);
-                            rt.localPosition = new Vector2((rt.localPosition.x + rt.sizeDelta.x / 2) - distanceToEdge - incrementDistace, rt.localPosition.y);
+                            if (row)
+                            {
+                                float distanceToEdge = (parentCorners[1].y + total) - childCorners[1].y;
+                                float incrementDistace = GetMaxCrossSizePerLine(i + 1, row);
+                                rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y + rt.sizeDelta.y / 2) - distanceToEdge - maxCrossSizePerLine);
+                            }
+                            else
+                            {
+                                float distanceToEdge = (parentCorners[1].x - total) - childCorners[0].x;
+                                float incrementDistace = GetMaxCrossSizePerLine(i + 1, row);
+                                rt.localPosition = new Vector2((rt.localPosition.x - rt.sizeDelta.x / 2) - distanceToEdge + maxCrossSizePerLine, rt.localPosition.y);
+                            }
+
                         }
 
                     }
@@ -1153,8 +1206,74 @@ public class FlexContainer : MonoBehaviour
                 }
             }
         }
-
+        AlignItems(row);
     }
+    public void AlignItems(bool row)
+    {
+        int lines = GetNumberOfLines();
+        Vector3[] largestChildCorners = new Vector3[4];
+        Vector3[] currentChildCorners = new Vector3[4];
+        for (int i = 1; i <= lines; i++)
+        {
+            RectTransform largestChild = GetMaxCrossSizeObjPerLine(i, row);
+            largestChild.GetLocalCorners(largestChildCorners);
+
+
+            foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
+            {
+                RectTransform rt = k.Value.childRect;
+                if (k.Value.LineNumber == i && ((row && rt.sizeDelta.y < largestChild.sizeDelta.y) || (!row && rt.sizeDelta.x < largestChild.sizeDelta.x)))
+                {
+                    rt.GetLocalCorners(currentChildCorners);
+                    if (alignItemsIndex == 0)
+                    {
+                        if (row)
+                        {
+                            float distanceToTop = ((largestChild.localPosition.y + largestChildCorners[1].y) - (rt.localPosition.y + currentChildCorners[1].y));
+                            rt.localPosition = new Vector2(rt.localPosition.x, rt.localPosition.y + distanceToTop);
+                        }
+                        else
+                        {
+                            float distanceToTop = ((largestChild.localPosition.x + largestChildCorners[2].x) - (rt.localPosition.x + currentChildCorners[2].x));
+                            rt.localPosition = new Vector2(rt.localPosition.x + distanceToTop, rt.localPosition.y);
+                        }
+                    }
+                    else if (alignItemsIndex == 1)
+                    {
+                        if (row)
+                        {
+                            float distanceToTop = ((largestChild.localPosition.y+ largestChildCorners[0].y) - (rt.localPosition.y+ currentChildCorners[0].y));
+                         
+                            rt.localPosition = new Vector2(rt.localPosition.x, rt.localPosition.y + distanceToTop);
+                        }
+                        else
+                        {
+                            float distanceToTop = ((largestChild.localPosition.x + largestChildCorners[2].x) - (rt.localPosition.x + currentChildCorners[2].x));
+                    Debug.Log("POGGERS");
+                            
+                            rt.localPosition = new Vector2(rt.localPosition.x + distanceToTop, rt.localPosition.y);
+                        }
+                    }
+                    else if (alignItemsIndex == 2)
+                    {
+                        if (row)
+                        {
+                            float distanceToTop = (largestChild.sizeDelta.y - rt.sizeDelta.y);
+                               Debug.Log(distanceToTop);
+                            rt.localPosition = new Vector2(rt.localPosition.x, largestChild.localPosition.y);
+                        }
+                        else
+                        {
+                            float distanceToTop = ((largestChild.localPosition.x + largestChildCorners[1].x) - (rt.localPosition.x + currentChildCorners[1].x));
+                            rt.localPosition = new Vector2(largestChild.localPosition.x, rt.localPosition.y);
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
     public float GetMaxCrossSizePerLine(int line, bool row)
     {
         float maxCrossSize = 0;
@@ -1168,6 +1287,30 @@ public class FlexContainer : MonoBehaviour
         }
 
         return maxCrossSize;
+    }
+    public RectTransform GetMaxCrossSizeObjPerLine(int line, bool row)
+    {
+        float maxCrossSize = 0;
+        RectTransform child = null;
+        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
+        {
+            if (k.Value.LineNumber == line)
+            {
+                if (row && k.Value.childRect.sizeDelta.y > maxCrossSize)
+                {
+                    maxCrossSize = k.Value.childRect.sizeDelta.y;
+                    child = k.Value.childRect;
+                }
+                else if (!row && k.Value.childRect.sizeDelta.x > maxCrossSize)
+                {
+                    maxCrossSize = k.Value.childRect.sizeDelta.x;
+                    child = k.Value.childRect;
+
+                }
+            }
+        }
+
+        return child;
     }
     public int GetMaxOrderPerLine(int line)
     {
@@ -1198,7 +1341,7 @@ public class FlexContainer : MonoBehaviour
         return lines;
     }
 
-    public List<float> CalculateWorldFreeSpaceList()
+    public List<float> CalculateWorldFreeSpaceList(bool row)
     {
 
         Vector3[] childCorners = new Vector3[4];
@@ -1233,7 +1376,8 @@ public class FlexContainer : MonoBehaviour
                 {
                     if (k.Value.isFrozen)
                     {
-                        freeSpacePerLine[k.Value.LineNumber - 1] = freeSpacePerLine[k.Value.LineNumber - 1] - k.Value.targetMainSize.x;
+                        if (row) freeSpacePerLine[k.Value.LineNumber - 1] = freeSpacePerLine[k.Value.LineNumber - 1] - k.Value.targetMainSize.x;
+                        else freeSpacePerLine[k.Value.LineNumber - 1] = freeSpacePerLine[k.Value.LineNumber - 1] - k.Value.targetMainSize.y;
                     }
                     else
                     {
@@ -1315,7 +1459,7 @@ public class FlexContainer : MonoBehaviour
 
         return freeSpacePerLine;
     }
-    public List<float> CalculateWorldFreeSpaceListv3(bool row)
+    public List<float> CalculateWorldFreeSpaceListHypo(bool row)
     {
 
         Vector3[] childCorners = new Vector3[4];
@@ -1383,7 +1527,9 @@ public class FlexContainer : MonoBehaviour
             total += k.Value.hypotheticalMainSize;
 
         }
-        float numberofLines = total / cont.rect.width;
+        float numberofLines = 0;
+        if (row) numberofLines = total / cont.rect.width;
+        else numberofLines = total / cont.rect.height;
 
         int roundedLines = Mathf.CeilToInt(numberofLines);
 
@@ -1407,7 +1553,7 @@ public class FlexContainer : MonoBehaviour
         {
             float contMainSize = 0;
             if (row) contMainSize = cont.rect.width;
-            else contMainSize = cont.rect.width;
+            else contMainSize = cont.rect.height;
             float minSizeComparison = 0;
             foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
             {
@@ -1416,26 +1562,34 @@ public class FlexContainer : MonoBehaviour
                     minSizeComparison = k.Value.hypotheticalMainSize;
                 }
             }
-            if (contMainSize > minSizeComparison) minSizeComparison = cont.rect.width;
-
-            //    Debug.Log(minSizeComparison);
+            if (contMainSize > minSizeComparison)
+            {
+                if (row) minSizeComparison = cont.rect.width;
+                else minSizeComparison = cont.rect.height;
+            }
             for (int i = 1; i <= roundedLines; i++)
             {
                 float TotalPerLine = 0;
-                if (i == 1) TotalPerLine = rtFirst.sizeDelta.x;
+                if (i == 1)
+                {
+                    if (row) TotalPerLine = rtFirst.sizeDelta.x;
+                    else TotalPerLine = rtFirst.sizeDelta.y;
+                }
                 else TotalPerLine = 0;
                 foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
                 {
+                    float objectSize = 0;
+                    if (row) objectSize = k.Value.hypotheticalMainSize + k.Value.marginValues[2] + k.Value.marginValues[3];
+                    else objectSize = k.Value.hypotheticalMainSize + k.Value.marginValues[0] + k.Value.marginValues[1];
                     if (k.Value.childOrder == 0)
                     {
                         continue;
                     }
 
-                    if (k.Value.childRect.gameObject.name == "Image (2)") Debug.Log(minSizeComparison + " " + TotalPerLine + " " + i);
-                    if (!k.Value.doesFit && (k.Value.hypotheticalMainSize + TotalPerLine <= minSizeComparison))
+                    if (!k.Value.doesFit && (objectSize + TotalPerLine <= minSizeComparison))
                     {
 
-                        TotalPerLine += k.Value.hypotheticalMainSize;
+                        TotalPerLine += objectSize;
                         k.Value.LineNumber = i;
                         k.Value.doesFit = true;
 
@@ -1468,25 +1622,9 @@ public class FlexContainer : MonoBehaviour
 
                 }
             }
-            for (int i = 2; i <= roundedLines; i++)
-            {
 
-                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
-                {
-                    if (k.Value.LineNumber == i)
-                    {
-                        k.Value.childRect.SetInsetAndSizeFromParentEdge(edge, 0, inset);
-                        break;
-
-                    }
-
-
-
-                }
-
-            }
         }
-        //printChildrenDict();
+        printChildrenDict();
     }
 
 
