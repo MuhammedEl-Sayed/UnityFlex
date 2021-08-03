@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+/// <summary>
+/// Determines the default size of a known Unity UI Element. Essential for the Flex Basis of a child.
+/// </summary>
 public class ContentSizeCalc
 {
     public static float DetermineContentSize(GameObject gme, bool row)
@@ -54,6 +57,9 @@ public class ContentSizeCalc
                 if (row) contentSize = img.mainTexture.width;
                 else contentSize = img.mainTexture.height;
             }
+        }
+        else{
+            contentSize = 200;
         }
 
         return contentSize;
