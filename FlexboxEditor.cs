@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEditor;
 [CustomEditor(typeof(FlexContainer))]
 [CanEditMultipleObjects]
+/// <summary>
+/// Inspector Editor for FlexContainer
+/// </summary>
 public class FlexboxEditor : Editor
 {
     //Container Options

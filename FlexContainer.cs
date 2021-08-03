@@ -5,18 +5,20 @@ using UnityEngine.UI;
 using System;
 using System.Linq;
 [ExecuteInEditMode]
-
+/// <summary>
+/// Contains the majority of algorithmic components. Based off of https://drafts.csswg.org/css-flexbox.
+/// </summary>
 public class FlexContainer : MonoBehaviour
 {
 
     [HideInInspector]
-        /// <summary>
+    /// <summary>
     /// If ticked, treats the container as the Root Container. Should only be one if you want the nested Containers to interact as Children.
     /// </summary>
     public bool RootContainer;
 
     [HideInInspector]
-        /// <summary>
+    /// <summary>
     /// If ticked, treats the container as a Child Container. Will execute the algorithm on its children but also is considered a child by the Root Container.
     /// </summary>
     public bool ChildContainer;
@@ -42,13 +44,13 @@ public class FlexContainer : MonoBehaviour
     public int justifyContentIndex;
 
     [HideInInspector]
-        /// <summary>
+    /// <summary>
     /// The index of the Dropdown for choosing how to Align Items.
     /// </summary>
     public int alignItemsIndex;
 
     [HideInInspector]
-            /// <summary>
+    /// <summary>
     /// The index of the Dropdown for choosing how to Align Content.
     /// </summary>
     public int alignContentIndex;
@@ -61,9 +63,9 @@ public class FlexContainer : MonoBehaviour
     /// <typeparam name="FlexChildren.ChildrenData">Class containing relevant properties of each Child. See FlexChildren for more information</typeparam>
     /// <returns>Dictionary containing each child, their InstanceID as a key, and their ChildrenData class</returns>
     public Dictionary<int, FlexChildren.ChildrenData> childrenDict = new Dictionary<int, FlexChildren.ChildrenData>();
-/// <summary>
-/// The RectTransform of the Container. Currently determined by whichever object has this script attached to it.
-/// </summary>
+    /// <summary>
+    /// The RectTransform of the Container. Currently determined by whichever object has this script attached to it.
+    /// </summary>
     RectTransform cont;
     [HideInInspector]
     /// <summary>
@@ -72,9 +74,9 @@ public class FlexContainer : MonoBehaviour
     public GameObject parentCanvas;
 
 
-/// <summary>
-/// Unity's default Update method. Currently used for applying the Algorithm in EditMode.
-/// </summary>
+    /// <summary>
+    /// Unity's default Update method. Currently used for applying the Algorithm in EditMode.
+    /// </summary>
     void Update()
     {
         parentCanvas = transform.root.gameObject;
@@ -96,6 +98,7 @@ public class FlexContainer : MonoBehaviour
     /// <summary>
     /// Clears Children Dictionary and re-assembles it. Primarily used for Editor execution when adding/removing objects. 
     /// Currently auto-orders children by position in hierarchy, may be re-visited for manual ordering later.
+    /// Also checks to see if child has a FlexChildren Script, if not, add the component. 
     /// </summary>
     public void GetChildren()
     {
@@ -107,16 +110,18 @@ public class FlexContainer : MonoBehaviour
             if ((RootContainer && cont.GetChild(i).gameObject.GetComponent<FlexContainer>()) || ChildContainer)
             {
                 FlexChildren flex = cont.GetChild(i).gameObject.GetComponent<FlexChildren>();
-                FlexChildren.ChildrenData cd = flex.ConstructData();
-
                 if (flex == null)
                 {
                     cont.GetChild(i).gameObject.AddComponent<FlexChildren>();
                 }
+                          FlexChildren.ChildrenData cd = flex.ConstructData();
                 if (cont.GetChild(i).gameObject.GetComponent<FlexContainer>() != null)
                 {
                     cd.nestedContainer = true;
                 }
+
+      
+
 
                 //Im automating childOrder, need to distinguish between auto and manual
                 cd.childOrder = i;
@@ -1547,82 +1552,82 @@ public class FlexContainer : MonoBehaviour
         */
 
 
-if (numberofLines > 1)
-{
-    float contMainSize = 0;
-    if (row) contMainSize = cont.rect.width;
-    else contMainSize = cont.rect.height;
-    float minSizeComparison = 0;
-    foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
-    {
-        if (k.Value.hypotheticalMainSize > minSizeComparison)
+        if (numberofLines > 1)
         {
-            minSizeComparison = k.Value.hypotheticalMainSize;
+            float contMainSize = 0;
+            if (row) contMainSize = cont.rect.width;
+            else contMainSize = cont.rect.height;
+            float minSizeComparison = 0;
+            foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
+            {
+                if (k.Value.hypotheticalMainSize > minSizeComparison)
+                {
+                    minSizeComparison = k.Value.hypotheticalMainSize;
+                }
+            }
+            if (contMainSize > minSizeComparison)
+            {
+                if (row) minSizeComparison = cont.rect.width;
+                else minSizeComparison = cont.rect.height;
+            }
+            for (int i = 1; i <= roundedLines; i++)
+            {
+                float TotalPerLine = 0;
+                if (i == 1)
+                {
+                    if (row) TotalPerLine = rtFirst.sizeDelta.x;
+                    else TotalPerLine = rtFirst.sizeDelta.y;
+                }
+                else TotalPerLine = 0;
+                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
+                {
+                    float objectSize = 0;
+                    if (row) objectSize = k.Value.hypotheticalMainSize + k.Value.marginValues[2] + k.Value.marginValues[3];
+                    else objectSize = k.Value.hypotheticalMainSize + k.Value.marginValues[0] + k.Value.marginValues[1];
+                    if ((k.Value.childOrder == 0 && justifyContentIndex == 0) || (k.Value.childOrder == GetMaxOrderPerLine(1) && justifyContentIndex == 1))
+                    {
+                        continue;
+                    }
+
+                    if (!k.Value.doesFit && (objectSize + TotalPerLine <= minSizeComparison))
+                    {
+
+                        TotalPerLine += objectSize;
+                        k.Value.LineNumber = i;
+                        k.Value.doesFit = true;
+
+                    }
+
+                    else if (!k.Value.doesFit)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        continue;
+                    }
+
+                }
+
+                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
+                {
+                    if (k.Value.childOrder == 0)
+                    {
+                        continue;
+                    }
+                    if (!k.Value.doesFit)
+                    {
+
+                        k.Value.LineNumber = i;
+
+
+                    }
+
+                }
+            }
+
         }
-    }
-    if (contMainSize > minSizeComparison)
-    {
-        if (row) minSizeComparison = cont.rect.width;
-        else minSizeComparison = cont.rect.height;
-    }
-    for (int i = 1; i <= roundedLines; i++)
-    {
-        float TotalPerLine = 0;
-        if (i == 1)
-        {
-            if (row) TotalPerLine = rtFirst.sizeDelta.x;
-            else TotalPerLine = rtFirst.sizeDelta.y;
-        }
-        else TotalPerLine = 0;
-        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
-        {
-            float objectSize = 0;
-            if (row) objectSize = k.Value.hypotheticalMainSize + k.Value.marginValues[2] + k.Value.marginValues[3];
-            else objectSize = k.Value.hypotheticalMainSize + k.Value.marginValues[0] + k.Value.marginValues[1];
-            if ((k.Value.childOrder == 0 && justifyContentIndex == 0) || (k.Value.childOrder == GetMaxOrderPerLine(1) && justifyContentIndex == 1))
-            {
-                continue;
-            }
-
-            if (!k.Value.doesFit && (objectSize + TotalPerLine <= minSizeComparison))
-            {
-
-                TotalPerLine += objectSize;
-                k.Value.LineNumber = i;
-                k.Value.doesFit = true;
-
-            }
-
-            else if (!k.Value.doesFit)
-            {
-                break;
-            }
-            else
-            {
-                continue;
-            }
-
-        }
-
-        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
-        {
-            if (k.Value.childOrder == 0)
-            {
-                continue;
-            }
-            if (!k.Value.doesFit)
-            {
-
-                k.Value.LineNumber = i;
-
-
-            }
-
-        }
-    }
-
-}
-printChildrenDict();
+        printChildrenDict();
     }
 
 

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 [ExecuteInEditMode]
+/// <summary>
+/// Defines what is considered a Child for FlexContainer. Is added to the FlexContainer.childrenDict. 
+/// </summary>
 public class FlexChildren : MonoBehaviour
 {
     [HideInInspector]

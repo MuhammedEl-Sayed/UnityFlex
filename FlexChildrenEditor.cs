@@ -4,6 +4,9 @@ using UnityEngine;
 using UnityEditor;
 [CustomEditor(typeof(FlexChildren))]
 [CanEditMultipleObjects]
+/// <summary>
+/// Inspector Editor for FlexChildren
+/// </summary>
 public class FlexChildrenEditor : Editor
 {
     SerializedProperty childorder;
