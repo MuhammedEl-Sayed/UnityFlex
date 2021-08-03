@@ -92,6 +92,9 @@ $(document).ready(function(){initNavTree('class_flex_container.html',''); initRe
 <div class="title">FlexContainer Class Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
+
+<p>Contains the majority of algorithmic components. Based off of <a href="https://drafts.csswg.org/css-flexbox">https://drafts.csswg.org/css-flexbox</a>.  
+ <a href="class_flex_container.html#details">More...</a></p>
 <div class="dynheader">
 Inheritance diagram for FlexContainer:</div>
 <div class="dyncontent">
@@ -102,7 +105,7 @@ Inheritance diagram for FlexContainer:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a4ee49bcb643ebaa129ca63c52e135e5a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#a4ee49bcb643ebaa129ca63c52e135e5a">GetChildren</a> ()</td></tr>
-<tr class="memdesc:a4ee49bcb643ebaa129ca63c52e135e5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears Children Dictionary and re-assembles it. Primarily used for Editor execution when adding/removing objects. Currently auto-orders children by position in hierarchy, may be re-visited for manual ordering later.  <a href="class_flex_container.html#a4ee49bcb643ebaa129ca63c52e135e5a">More...</a><br /></td></tr>
+<tr class="memdesc:a4ee49bcb643ebaa129ca63c52e135e5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clears Children Dictionary and re-assembles it. Primarily used for Editor execution when adding/removing objects. Currently auto-orders children by position in hierarchy, may be re-visited for manual ordering later. Also checks to see if child has a <a class="el" href="class_flex_children.html" title="Defines what is considered a Child for FlexContainer. Is added to the FlexContainer....">FlexChildren</a> Script, if not, add the component.  <a href="class_flex_container.html#a4ee49bcb643ebaa129ca63c52e135e5a">More...</a><br /></td></tr>
 <tr class="separator:a4ee49bcb643ebaa129ca63c52e135e5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afcf1772b7cf0a472cd9860290bf288c1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#afcf1772b7cf0a472cd9860290bf288c1">SetContainerSize</a> ()</td></tr>
 <tr class="memdesc:afcf1772b7cf0a472cd9860290bf288c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sets the RootContainer to be the size of the Screen and its localPosition to zero.  <a href="class_flex_container.html#afcf1772b7cf0a472cd9860290bf288c1">More...</a><br /></td></tr>
@@ -162,8 +165,10 @@ Public Member Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:aa3efc2daf5c0f5ab0bf553155a9bbf88"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#aa3efc2daf5c0f5ab0bf553155a9bbf88">RootContainer</a></td></tr>
+<tr class="memdesc:aa3efc2daf5c0f5ab0bf553155a9bbf88"><td class="mdescLeft">&#160;</td><td class="mdescRight">If ticked, treats the container as the Root Container. Should only be one if you want the nested Containers to interact as Children.  <a href="class_flex_container.html#aa3efc2daf5c0f5ab0bf553155a9bbf88">More...</a><br /></td></tr>
 <tr class="separator:aa3efc2daf5c0f5ab0bf553155a9bbf88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4fbb0450404df7e015bdd0f33ff83c58"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#a4fbb0450404df7e015bdd0f33ff83c58">ChildContainer</a></td></tr>
+<tr class="memdesc:a4fbb0450404df7e015bdd0f33ff83c58"><td class="mdescLeft">&#160;</td><td class="mdescRight">If ticked, treats the container as a Child Container. Will execute the algorithm on its children but also is considered a child by the Root Container.  <a href="class_flex_container.html#a4fbb0450404df7e015bdd0f33ff83c58">More...</a><br /></td></tr>
 <tr class="separator:a4fbb0450404df7e015bdd0f33ff83c58"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5c4d66363bffe3af6b2aabda781a2e0e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#a5c4d66363bffe3af6b2aabda781a2e0e">flexDirectionIndex</a></td></tr>
 <tr class="memdesc:a5c4d66363bffe3af6b2aabda781a2e0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">The index of the Dropdown for choosing the Flex Direction.  <a href="class_flex_container.html#a5c4d66363bffe3af6b2aabda781a2e0e">More...</a><br /></td></tr>
@@ -175,17 +180,21 @@ Public Attributes</h2></td></tr>
 <tr class="memdesc:a671f5e7c841f61e72cf373d75ad28a62"><td class="mdescLeft">&#160;</td><td class="mdescRight">The index of the Dropdown for choosing how to Justify Content.  <a href="class_flex_container.html#a671f5e7c841f61e72cf373d75ad28a62">More...</a><br /></td></tr>
 <tr class="separator:a671f5e7c841f61e72cf373d75ad28a62"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae537e34227f42bd9157db9ef4af0f41c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#ae537e34227f42bd9157db9ef4af0f41c">alignItemsIndex</a></td></tr>
+<tr class="memdesc:ae537e34227f42bd9157db9ef4af0f41c"><td class="mdescLeft">&#160;</td><td class="mdescRight">The index of the Dropdown for choosing how to Align Items.  <a href="class_flex_container.html#ae537e34227f42bd9157db9ef4af0f41c">More...</a><br /></td></tr>
 <tr class="separator:ae537e34227f42bd9157db9ef4af0f41c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a21ffba33f059602fb5f54e002d9078dd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#a21ffba33f059602fb5f54e002d9078dd">alignContentIndex</a></td></tr>
+<tr class="memdesc:a21ffba33f059602fb5f54e002d9078dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">The index of the Dropdown for choosing how to Align Content.  <a href="class_flex_container.html#a21ffba33f059602fb5f54e002d9078dd">More...</a><br /></td></tr>
 <tr class="separator:a21ffba33f059602fb5f54e002d9078dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1516f4bdd38994aa95bd34e4d4cf1643"><td class="memItemLeft" align="right" valign="top">Dictionary&lt; int, <a class="el" href="class_flex_children_1_1_children_data.html">FlexChildren.ChildrenData</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#a1516f4bdd38994aa95bd34e4d4cf1643">childrenDict</a> = new Dictionary&lt;int, <a class="el" href="class_flex_children_1_1_children_data.html">FlexChildren.ChildrenData</a>&gt;()</td></tr>
-<tr class="memdesc:a1516f4bdd38994aa95bd34e4d4cf1643"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the dictionary that contains all the Children that container the <a class="el" href="class_flex_children.html">FlexChildren</a> Script. Essential to every function.  <a href="class_flex_container.html#a1516f4bdd38994aa95bd34e4d4cf1643">More...</a><br /></td></tr>
+<tr class="memdesc:a1516f4bdd38994aa95bd34e4d4cf1643"><td class="mdescLeft">&#160;</td><td class="mdescRight">This is the dictionary that contains all the Children that container the <a class="el" href="class_flex_children.html" title="Defines what is considered a Child for FlexContainer. Is added to the FlexContainer....">FlexChildren</a> Script. Essential to every function.  <a href="class_flex_container.html#a1516f4bdd38994aa95bd34e4d4cf1643">More...</a><br /></td></tr>
 <tr class="separator:a1516f4bdd38994aa95bd34e4d4cf1643"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a41d24e31d413f36028565f466f91babb"><td class="memItemLeft" align="right" valign="top">GameObject&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#a41d24e31d413f36028565f466f91babb">parentCanvas</a></td></tr>
 <tr class="memdesc:a41d24e31d413f36028565f466f91babb"><td class="mdescLeft">&#160;</td><td class="mdescRight">The root Canvas object. Used for determining the RootContainers size.  <a href="class_flex_container.html#a41d24e31d413f36028565f466f91babb">More...</a><br /></td></tr>
 <tr class="separator:a41d24e31d413f36028565f466f91babb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Contains the majority of algorithmic components. Based off of <a href="https://drafts.csswg.org/css-flexbox">https://drafts.csswg.org/css-flexbox</a>. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a05ecaa4d01ff0f1742c3b80837ec1fb7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a05ecaa4d01ff0f1742c3b80837ec1fb7">&#9670;&nbsp;</a></span>AlignItems()</h2>
 
@@ -416,7 +425,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Clears Children Dictionary and re-assembles it. Primarily used for Editor execution when adding/removing objects. Currently auto-orders children by position in hierarchy, may be re-visited for manual ordering later. </p>
+<p>Clears Children Dictionary and re-assembles it. Primarily used for Editor execution when adding/removing objects. Currently auto-orders children by position in hierarchy, may be re-visited for manual ordering later. Also checks to see if child has a <a class="el" href="class_flex_children.html" title="Defines what is considered a Child for FlexContainer. Is added to the FlexContainer....">FlexChildren</a> Script, if not, add the component. </p>
 
 </div>
 </div>
@@ -703,8 +712,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p></p>
-<p>The index of the Dropdown for choosing how to Align Content.</p>
+<p>The index of the Dropdown for choosing how to Align Content. </p>
 
 </div>
 </div>
@@ -720,8 +728,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p></p>
-<p>The index of the Dropdown for choosing how to Align Items.</p>
+<p>The index of the Dropdown for choosing how to Align Items. </p>
 
 </div>
 </div>
@@ -737,8 +744,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p></p>
-<p>If ticked, treats the container as a Child Container. Will execute the algorithm on its children but also is considered a child by the Root Container.</p>
+<p>If ticked, treats the container as a Child Container. Will execute the algorithm on its children but also is considered a child by the Root Container. </p>
 
 </div>
 </div>
@@ -754,11 +760,11 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>This is the dictionary that contains all the Children that container the <a class="el" href="class_flex_children.html">FlexChildren</a> Script. Essential to every function. </p>
+<p>This is the dictionary that contains all the Children that container the <a class="el" href="class_flex_children.html" title="Defines what is considered a Child for FlexContainer. Is added to the FlexContainer....">FlexChildren</a> Script. Essential to every function. </p>
 <dl class="tparams"><dt>Template Parameters</dt><dd>
   <table class="tparams">
     <tr><td class="paramname">int</td><td>The InstanceID of each child.</td></tr>
-    <tr><td class="paramname"><a class="el" href="class_flex_children_1_1_children_data.html" title="This class stores all the relevant data that FlexContainer needs for the algorithm and is manipulated...">FlexChildren.ChildrenData</a></td><td>Class containing relevant properties of each Child. See <a class="el" href="class_flex_children.html">FlexChildren</a> for more information</td></tr>
+    <tr><td class="paramname"><a class="el" href="class_flex_children_1_1_children_data.html" title="This class stores all the relevant data that FlexContainer needs for the algorithm and is manipulated...">FlexChildren.ChildrenData</a></td><td>Class containing relevant properties of each Child. See <a class="el" href="class_flex_children.html" title="Defines what is considered a Child for FlexContainer. Is added to the FlexContainer....">FlexChildren</a> for more information</td></tr>
   </table>
   </dd>
 </dl>
@@ -842,8 +848,7 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p></p>
-<p>If ticked, treats the container as the Root Container. Should only be one if you want the nested Containers to interact as Children.</p>
+<p>If ticked, treats the container as the Root Container. Should only be one if you want the nested Containers to interact as Children. </p>
 
 </div>
 </div>
