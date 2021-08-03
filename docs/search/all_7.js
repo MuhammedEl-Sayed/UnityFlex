@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['mainaxisalignment_44',['MainAxisAlignment',['../class_flex_container.html#a68ade8f33e523380119ce2f6bc3e1ff9',1,'FlexContainer']]],
-  ['mainsizedetermination_45',['MainSizeDetermination',['../class_flex_container.html#a97217b90865d1c8ed101d1ef19c2b6cb',1,'FlexContainer']]]
+  ['leftmargintype_42',['leftMarginType',['../class_flex_children.html#adcb035f07859bf66d30ba0c1309639fe',1,'FlexChildren']]],
+  ['leftmarginvalue_43',['leftMarginValue',['../class_flex_children.html#a413c31d53a523c44788eedbc68c59b2e',1,'FlexChildren']]],
+  ['linelengthdetermination_44',['LineLengthDetermination',['../class_flex_container.html#af2de128fdeebff6995e2dc323b586ec4',1,'FlexContainer']]]
 ];

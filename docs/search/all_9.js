@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['resolveflexiblelengths_49',['ResolveFlexibleLengths',['../class_flex_container.html#a4f21b03dac257ed340709f76530c5d86',1,'FlexContainer']]],
-  ['rightmargintype_50',['rightMarginType',['../class_flex_children.html#abe2d8b6a0bda269348e058ba2a01a54c',1,'FlexChildren']]],
-  ['rightmarginvalue_51',['rightMarginValue',['../class_flex_children.html#a766de674c563cf5ba12e5262988694c4',1,'FlexChildren']]],
-  ['rootcontainer_52',['RootContainer',['../class_flex_container.html#aa3efc2daf5c0f5ab0bf553155a9bbf88',1,'FlexContainer']]]
+  ['parentcanvas_47',['parentCanvas',['../class_flex_container.html#a41d24e31d413f36028565f466f91babb',1,'FlexContainer']]],
+  ['positionitems_48',['PositionItems',['../class_flex_container.html#a2eba2864ac69b23f127d502f744b55b6',1,'FlexContainer']]],
+  ['printchildrendict_49',['printChildrenDict',['../class_flex_container.html#a37e061c45f9596b1d272bf234e1cd6cf',1,'FlexContainer']]]
 ];

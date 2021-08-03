@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['setcontainersize_80',['SetContainerSize',['../class_flex_container.html#afcf1772b7cf0a472cd9860290bf288c1',1,'FlexContainer']]]
+  ['resolveflexiblelengths_81',['ResolveFlexibleLengths',['../class_flex_container.html#a4f21b03dac257ed340709f76530c5d86',1,'FlexContainer']]]
 ];

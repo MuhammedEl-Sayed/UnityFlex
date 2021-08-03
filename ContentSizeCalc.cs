@@ -8,6 +8,12 @@ using TMPro;
 /// </summary>
 public class ContentSizeCalc
 {
+    /// <summary>
+    /// Determines the default size of a known Unity UI Element passed to it.
+    /// </summary>
+    /// <param name="gme">The GameObject of the UI Element</param>
+    /// <param name="row">If Row/Row-reverse is selected, this is true. If Column/Column-reverse is selected, this is false.</param>
+    /// <returns>Returns the minimum size of an element. Default is 200.</returns>
     public static float DetermineContentSize(GameObject gme, bool row)
     {
         float contentSize = 0;
