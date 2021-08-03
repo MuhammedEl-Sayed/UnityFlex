@@ -7,7 +7,6 @@ using UnityEditor;
 public class FlexboxEditor : Editor
 {
     //Container Options
-    string[] displaytypes = new[] { "Flex", "Inline-Flex" };
     SerializedProperty display;
     SerializedProperty flexdir;
     SerializedProperty flexwr;
@@ -31,7 +30,6 @@ public class FlexboxEditor : Editor
 
     void OnEnable()
     {
-        display = serializedObject.FindProperty("displayTypeIndex");
         flexdir = serializedObject.FindProperty("flexDirectionIndex");
         flexwr = serializedObject.FindProperty("flexWrapIndex");
         justcon = serializedObject.FindProperty("justifyContentIndex");
@@ -64,7 +62,6 @@ public class FlexboxEditor : Editor
 
         }
 
-        display.intValue = EditorGUILayout.Popup("Display Type", display.intValue, displaytypes);
 
         flexdir.intValue = EditorGUILayout.Popup("Flex Direction", flexdir.intValue, flexdirection);
 

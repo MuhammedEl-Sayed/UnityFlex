@@ -5,97 +5,81 @@ using UnityEngine.UI;
 using System;
 using System.Linq;
 [ExecuteInEditMode]
-/*
-Notes for Josh, so problems stems from getting defined basis. Getting min size doesn't really work because
-I'm changing the size of the object, and trying to get its own min size, meaning that the min size is always its own current size
-This is fucking up putting the children in a single line.
 
-Possible solutions:
-- Tried setting flex basis as 0, really fucks with hypothetical size which fucks with checking if it will fit in the line.
-*/
 public class FlexContainer : MonoBehaviour
 {
+
     [HideInInspector]
+        /// <summary>
+    /// If ticked, treats the container as the Root Container. Should only be one if you want the nested Containers to interact as Children.
+    /// </summary>
     public bool RootContainer;
+
     [HideInInspector]
+        /// <summary>
+    /// If ticked, treats the container as a Child Container. Will execute the algorithm on its children but also is considered a child by the Root Container.
+    /// </summary>
     public bool ChildContainer;
+
     [HideInInspector]
-    public int displayTypeIndex;
-    [HideInInspector]
+    /// <summary>
+    /// The index of the Dropdown for choosing the Flex Direction.
+    /// </summary>
     public int flexDirectionIndex;
 
     [HideInInspector]
+    /// <summary>
+    /// The index of the Dropdown for choosing the type of Wrapping.
+    /// </summary>
     public int flexWrapIndex;
 
 
 
     [HideInInspector]
+    /// <summary>
+    /// The index of the Dropdown for choosing how to Justify Content.
+    /// </summary>
     public int justifyContentIndex;
 
     [HideInInspector]
+        /// <summary>
+    /// The index of the Dropdown for choosing how to Align Items.
+    /// </summary>
     public int alignItemsIndex;
 
     [HideInInspector]
+            /// <summary>
+    /// The index of the Dropdown for choosing how to Align Content.
+    /// </summary>
     public int alignContentIndex;
 
-
-
-    [Serializable]
     [HideInInspector]
-    public class LineData
-    {
-        public int lineNumber;
-        public float crossSize;
-    }
-    [HideInInspector]
-    public Dictionary<int, LineData> LineDataDic = new Dictionary<int, LineData>();
-    [HideInInspector]
-    public List<int> childFlexGrowList = new List<int>();
-
-
-    [HideInInspector]
-    public List<int> childFlexShrinkList = new List<int>();
-
-    [HideInInspector]
-
-    private List<float> flexBasisSize;
-
-    [HideInInspector]
+    /// <summary>
+    /// This is the dictionary that contains all the Children that container the FlexChildren Script. Essential to every function.
+    /// </summary>
+    /// <typeparam name="int">The InstanceID of each child.</typeparam>
+    /// <typeparam name="FlexChildren.ChildrenData">Class containing relevant properties of each Child. See FlexChildren for more information</typeparam>
+    /// <returns>Dictionary containing each child, their InstanceID as a key, and their ChildrenData class</returns>
     public Dictionary<int, FlexChildren.ChildrenData> childrenDict = new Dictionary<int, FlexChildren.ChildrenData>();
-    [HideInInspector]
-    public Dictionary<int, FlexChildren.ChildrenData> containerDict = new Dictionary<int, FlexChildren.ChildrenData>();
-    [HideInInspector]
-    public string currentChildIndex; //need to make it an int
-
-
-    private Vector2 containerCenter;
-
-    private float height;
-    private float width;
+/// <summary>
+/// The RectTransform of the Container. Currently determined by whichever object has this script attached to it.
+/// </summary>
     RectTransform cont;
     [HideInInspector]
+    /// <summary>
+    /// The root Canvas object. Used for determining the RootContainers size.
+    /// </summary>
     public GameObject parentCanvas;
-    public bool normalContainer;
-
-    private int wrapping;
-    private float mainSize;
 
 
-
-    [HideInInspector]
-    public int numberOfChildren = 0;
-    public List<int> childKeys = new List<int>();
-    [HideInInspector]
-    public int numberOfChildContainers;
-    private bool firstItem;
-    List<float> listOfTotalWidths = new List<float>();
-
+/// <summary>
+/// Unity's default Update method. Currently used for applying the Algorithm in EditMode.
+/// </summary>
     void Update()
     {
         parentCanvas = transform.root.gameObject;
         cont = gameObject.GetComponent<RectTransform>();
         SetContainerSize();
-        GetContainerInfo();
         GetChildren();
 
         LineLengthDetermination();
@@ -108,11 +92,15 @@ public class FlexContainer : MonoBehaviour
 
     [HideInInspector]
 
+
+    /// <summary>
+    /// Clears Children Dictionary and re-assembles it. Primarily used for Editor execution when adding/removing objects. 
+    /// Currently auto-orders children by position in hierarchy, may be re-visited for manual ordering later.
+    /// </summary>
     public void GetChildren()
     {
         childrenDict.Clear();
-        childKeys.Clear();
-        numberOfChildContainers = 0;
+
 
         for (int i = 0; i < cont.childCount; i++)
         {
@@ -127,7 +115,6 @@ public class FlexContainer : MonoBehaviour
                 }
                 if (cont.GetChild(i).gameObject.GetComponent<FlexContainer>() != null)
                 {
-                    numberOfChildContainers++;
                     cd.nestedContainer = true;
                 }
 
@@ -135,8 +122,6 @@ public class FlexContainer : MonoBehaviour
                 cd.childOrder = i;
                 flex.childOrder = i;
 
-                cd.autoHeight = flex.autoHeight;
-                cd.autoWidth = flex.autoWidth;
 
                 cd.marginTypes = new Vector4(flex.topMarginType, flex.bottomMarginType, flex.rightMarginType, flex.leftMarginType);
                 cd.marginValues = new Vector4(flex.topMarginValue, flex.bottomMarginValue, flex.rightMarginValue, flex.leftMarginValue);
@@ -144,7 +129,7 @@ public class FlexContainer : MonoBehaviour
 
                 childrenDict.Add(cont.GetChild(i).gameObject.GetInstanceID(), cd);
 
-                childKeys.Add(cont.GetChild(i).gameObject.GetInstanceID());
+
 
             }
         }
@@ -152,7 +137,9 @@ public class FlexContainer : MonoBehaviour
 
 
     }
-
+    /// <summary>
+    /// Sets the RootContainer to be the size of the Screen and its localPosition to zero.
+    /// </summary>
     public void SetContainerSize()
     {
 
@@ -160,25 +147,22 @@ public class FlexContainer : MonoBehaviour
         {
             gameObject.GetComponent<RectTransform>().sizeDelta = new Vector2(Screen.width, Screen.height);
             gameObject.GetComponent<RectTransform>().localPosition = new Vector3(0, 0, 0);
-            //   SetChildContainerSize();
+
         }
 
 
 
 
     }
-
-    public void GetContainerInfo()
-    {
-
-        containerCenter = cont.rect.center;
-        height = cont.rect.height;
-        width = cont.rect.width;
-    }
-
+    /// <summary>
+    /// Determines the Flex Basis of each Child. If not explicit, the default main/cross sizes of the Child is used based on the type of component.
+    /// For an explicit Flex Basis, the percentage is taken and used to calculate the Flex Basis size relative to the container size.
+    /// In both cases, the Hypothetical Main/Cross Sizes are then calculated by clamping the Flex Basis to each axis's constraints.
+    /// See https://drafts.csswg.org/css-flexbox/#line-sizing for more information on how it should work.
+    /// </summary>
     public void LineLengthDetermination()
     {
-        float remainingPrecent = 100;
+
 
         foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
         {
@@ -189,7 +173,6 @@ public class FlexContainer : MonoBehaviour
                 {
 
                     k.Value.definedBasis = cont.sizeDelta.x * (k.Value.childFlexBasis / 100);
-                    remainingPrecent -= k.Value.childFlexBasis;
 
                     k.Value.hypotheticalMainSize = Mathf.Clamp(k.Value.definedBasis, k.Value.childWidthMinMax.x, k.Value.childWidthMinMax.y);
 
@@ -199,7 +182,6 @@ public class FlexContainer : MonoBehaviour
                 if (flexDirectionIndex == 2 || flexDirectionIndex == 3)
                 {
                     k.Value.definedBasis = cont.sizeDelta.y * (k.Value.childFlexBasis / 100);
-                    remainingPrecent -= k.Value.childFlexBasis;
                     k.Value.hypotheticalMainSize = Mathf.Clamp(k.Value.definedBasis, k.Value.childHeightMinMax.x, k.Value.childHeightMinMax.y);
 
                 }
@@ -211,7 +193,6 @@ public class FlexContainer : MonoBehaviour
                 {
 
 
-                    // k.Value.definedBasis = (cont.sizeDelta.x * ((remainingPrecent / 100) / cont.childCount));
                     k.Value.definedBasis = ContentSizeCalc.DetermineContentSize(k.Value.childRect.gameObject, true);
 
                     k.Value.hypotheticalCrossSize = Mathf.Clamp(ContentSizeCalc.DetermineContentSize(k.Value.childRect.gameObject, false), k.Value.childHeightMinMax.x, k.Value.childHeightMinMax.y);
@@ -221,10 +202,9 @@ public class FlexContainer : MonoBehaviour
                 }
                 if (flexDirectionIndex == 2 || flexDirectionIndex == 3)
                 {
-                    //  k.Value.definedBasis = (cont.sizeDelta.y * ((remainingPrecent / 100) / cont.childCount));
                     k.Value.definedBasis = ContentSizeCalc.DetermineContentSize(k.Value.childRect.gameObject, false);
                     k.Value.hypotheticalCrossSize = Mathf.Clamp(ContentSizeCalc.DetermineContentSize(k.Value.childRect.gameObject, true), k.Value.childWidthMinMax.x, k.Value.childWidthMinMax.y);
-                   
+
                     k.Value.hypotheticalMainSize = Mathf.Clamp(k.Value.definedBasis, k.Value.childHeightMinMax.x, k.Value.childHeightMinMax.y);
 
                 }
@@ -234,15 +214,19 @@ public class FlexContainer : MonoBehaviour
         }
     }
 
-
-    public void PositionItems(bool CheckForNewLines)
+    /// <summary>
+    /// Intial Positioning for Children with consideration of the chosen properties. The resulting position is rarely the final positioning of the Children.
+    /// Then, depending on whether wrapping is enabled, the CalculateChildrenLines function is called to determine the lineNumber for each Child. This is critical for the remaining functions.
+    /// See https://drafts.csswg.org/css-flexbox/#main-sizing for more information on how this should work.
+    /// </summary>
+    public void PositionItems()
     {
         var edge = RectTransform.Edge.Left;
         var inset = cont.rect.width;
         bool row = true;
-        previousLineNumber = 1;
 
-        firstItem = true;
+
+        bool firstItem = true;
         RectTransform rtPrev = null;
         RectTransform rtFirst = null;
         Vector3[] childCorners = new Vector3[4];
@@ -261,9 +245,7 @@ public class FlexContainer : MonoBehaviour
         {
 
             RectTransform rt = k.Value.childRect;
-            /*             if(nextChildIncrement){
-                            k.Value.LineNumber++;
-                        } */
+
             switch (flexDirectionIndex)
             {
                 case 0:
@@ -322,20 +304,6 @@ public class FlexContainer : MonoBehaviour
                     row = false;
                     break;
             }
-
-            /* 
-                        if (row)
-                        {
-
-                            rt.sizeDelta = new Vector2(k.Value.hypotheticalMainSize, rt.sizeDelta.y);
-                            listOfTotalWidths[k.Value.LineNumber - 1] += k.Value.hypotheticalMainSize;
-                        }
-                        else
-                        {
-                            rt.sizeDelta = new Vector2(rt.sizeDelta.x, k.Value.hypotheticalMainSize);
-                            listOfTotalWidths[k.Value.LineNumber - 1] += rt.sizeDelta.y;
-                        }
-             */
             if (firstItem)
             {
                 rt.localPosition = new Vector3(0, 0, 0);
@@ -393,7 +361,9 @@ public class FlexContainer : MonoBehaviour
         if (flexWrapIndex == 0 || flexWrapIndex == 2)
             CalculateChildrenLines(edge, inset, rtFirst, row);
     }
-
+    /// <summary>
+    /// Checks properties that are common to different parts of the algorithm and passes them. This is the main function to be called for the algorithm and runs the different parts in order.
+    /// </summary>
     public void MainSizeDetermination()
     {
         bool row = true;
@@ -401,7 +371,7 @@ public class FlexContainer : MonoBehaviour
         {
             row = false;
         }
-        PositionItems(row);
+        PositionItems();
 
         ResolveFlexibleLengths(row);
         MainAxisAlignment(row);
@@ -413,7 +383,9 @@ public class FlexContainer : MonoBehaviour
 
     }
 
-
+    /// <summary>
+    /// Debug function that prints specific values to the console for each Child. 
+    /// </summary>
 
     public void printChildrenDict()
     {
@@ -422,6 +394,11 @@ public class FlexContainer : MonoBehaviour
             Debug.Log("Name: " + k.Value.childRect.gameObject.name + " LineNumber: " + k.Value.LineNumber);
         }
     }
+    /// <summary>
+    /// Auto-resizes Children in the container dependent on their constraints, the remaining space in their respective lines, and their Flex Grow and Flex Shrink values.
+    /// See https://drafts.csswg.org/css-flexbox/#resolve-flexible-lengths for more information on how this should work.
+    /// </summary>
+    /// <param name="row">If Row/Row-reverse is selected, this is true. If Column/Column-reverse is selected, this is false.</param>
     public void ResolveFlexibleLengths(bool row)
     {
         int numberOfLines = GetNumberOfLines();
@@ -707,13 +684,13 @@ public class FlexContainer : MonoBehaviour
             }
         }
     }
-
+    /// <summary>
+    /// Determines the cross size of each child. This is either set to the hypothetical cross size or by dividing the container's cross size by the number of lines if the align content property is set to stretch.
+    /// See https://drafts.csswg.org/css-flexbox/#cross-sizing for more information on how this should work.
+    /// </summary>
+    /// <param name="row">If Row/Row-reverse is selected, this is true. If Column/Column-reverse is selected, this is false.</param>
     public void CrossSizeDetermination(bool row)
     {
-        /*
-        Determine the hypothetical cross size of each item by performing layout as if it were an in-flow block-level box with the used main size and the given available space, treating auto as fit-content.
-        Calculate the cross size of each flex line.
-        */
 
         List<float> crossSizePerLine = new List<float>();
         int lines = GetNumberOfLines();
@@ -725,7 +702,7 @@ public class FlexContainer : MonoBehaviour
             }
             else if (row && alignContentIndex == 3) k.Value.childRect.sizeDelta = new Vector2(k.Value.childRect.sizeDelta.x, cont.rect.height / lines);
             else if (!row && alignContentIndex != 3) k.Value.childRect.sizeDelta = new Vector2(k.Value.hypotheticalCrossSize, k.Value.childRect.sizeDelta.y);
-            else if (!row && alignContentIndex == 3) k.Value.childRect.sizeDelta = new Vector2(cont.rect.width / lines, k.Value.childRect.sizeDelta.x);
+            else if (!row && alignContentIndex == 3) k.Value.childRect.sizeDelta = new Vector2(cont.rect.width / lines, k.Value.childRect.sizeDelta.y);
         }
         for (int i = 0; i < lines; i++) crossSizePerLine.Add(0);
         if (lines == 1)
@@ -736,18 +713,6 @@ public class FlexContainer : MonoBehaviour
 
 
 
-        /*
-
-        If the flex container is single-line and has a definite cross size, the cross size of the flex line is the flex container’s inner cross size.
-
-        Otherwise, for each flex line:
-
-            Collect all the flex items whose inline-axis is parallel to the main-axis, whose align-self is baseline, and whose cross-axis margins are both non-auto. Find the largest of the distances between each item’s baseline and its hypothetical outer cross-start edge, and the largest of the distances between each item’s baseline and its hypothetical outer cross-end edge, and sum these two values.
-            Among all the items not collected by the previous step, find the largest outer hypothetical cross size.
-            The used cross-size of the flex line is the largest of the numbers found in the previous two steps and zero.
-
-            If the flex container is single-line, then clamp the line’s cross-size to be within the container’s computed min and max cross sizes. Note that if CSS 2.1’s definition of min/max-width/height applied more generally, this behavior would fall out automatically.
-        */
         else
         {
             for (int i = 0; i < lines; i++)
@@ -776,36 +741,15 @@ public class FlexContainer : MonoBehaviour
             }
 
         }
-        List<float> crossSizeTotals = new List<float>();
 
-        for (int i = 0; i < lines; i++)
-        {
-            crossSizeTotals.Add(0);
-        }
-        for (int i = 0; i < lines; i++)
-        {
-            if (i > 1)
-            {
-                crossSizeTotals[i] = crossSizeTotals[i - 1] + crossSizePerLine[i];
-            }
-            else crossSizeTotals[i] = crossSizeTotals[i] + crossSizePerLine[i];
-        }
 
-        /*
-        Handle 'align-content: stretch'. If the flex container has a definite cross size, align-content is stretch, and the sum of the flex lines' cross sizes is less than the flex container’s inner cross size, increase the cross size of each flex line by equal amounts such that the sum of their cross sizes exactly equals the flex container’s inner cross size.
-        Collapse visibility:collapse items. If any flex items have visibility: collapse, note the cross size of the line they’re in as the item’s strut size, and restart layout from the beginning.
-        */
-
-        /*
-        In this second layout round, when collecting items into lines, treat the collapsed items as having zero main size. For the rest of the algorithm following that step, ignore the collapsed items entirely (as if they were display:none) except that after calculating the cross size of the lines, if any line’s cross size is less than the largest strut size among all the collapsed items in the line, set its cross size to that strut size.
-
-        Skip this step in the second layout round.
-        Determine the used cross size of each flex item. If a flex item has align-self: stretch, its computed cross size property is auto, and neither of its cross-axis margins are auto, the used outer cross size is the used cross size of its flex line, clamped according to the item’s used min and max cross sizes. Otherwise, the used cross size is the item’s hypothetical cross size.
-
-        If the flex item has align-self: stretch, redo layout for its contents, treating this used size as its definite cross size so that percentage-sized children can be resolved
-        */
     }
-
+    /// <summary>
+    /// Determines the final main axis positioning of the Children. Dependent on the Jusitfy Content Property.
+    /// Also takes into consideration the margins and applies them to an objects position.
+    /// See https://drafts.csswg.org/css-flexbox/#main-alignment for more information on how this should work.
+    /// </summary>
+    /// <param name="row">If Row/Row-reverse is selected, this is true. If Column/Column-reverse is selected, this is false.</param>
     public void MainAxisAlignment(bool row)
 
     {
@@ -1024,6 +968,12 @@ public class FlexContainer : MonoBehaviour
 
 
     }
+    /// <summary>
+    /// Determines the final cross axis position of the Children. Dependent on the Align Content and Align Item Properties.
+    /// Uses the container's loca corners to determine how to position each Child in the line, while positioning each line by the size of the largest cross size in the previous line.
+    /// See https://drafts.csswg.org/css-flexbox/#cross-alignment for more information on how this should work.
+    /// </summary>
+    /// <param name="row">If Row/Row-reverse is selected, this is true. If Column/Column-reverse is selected, this is false.</param>
     public void CrossAsixAlignment(bool row)
     {
         int lines = GetNumberOfLines();
@@ -1065,20 +1015,18 @@ public class FlexContainer : MonoBehaviour
                         }
                         else if (i > 0)
                         {
-                            float distanceToEdge = parentCorners[1].y - childCorners[1].y;
-                            //float incrementDistace = GetMaxCrossSizePerLine(i, row);
+                            float distanceToEdge = parentCorners[1].y - childCorners[0].y;
                             if (row)
                             {
-                           //     if (rt.gameObject.name == "Text (TMP) (1)") Debug.Log("Distance: " + distanceToEdge + " PreviousItemCross: " + maxCrossSizePerLine);
 
-                                rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y - rt.sizeDelta.y / 2) - (distanceToEdge) - maxCrossSizePerLine);
+                                rt.localPosition = new Vector2(rt.localPosition.x, (rt.localPosition.y + rt.sizeDelta.y / 2) + (distanceToEdge) - maxCrossSizePerLine);
                             }
                             else
                             {
                                 distanceToEdge = parentCorners[1].x - childCorners[0].x;
-                             
-                               // Debug.Log(distanceToEdge + " " + maxCrossSizePerLine);
-                                rt.localPosition = new Vector2((rt.localPosition.x + rt.sizeDelta.x / 2) - (distanceToEdge - maxCrossSizePerLine), rt.localPosition.y);
+
+                                // Debug.Log(distanceToEdge + " " + maxCrossSizePerLine);
+                                rt.localPosition = new Vector2((rt.localPosition.x - rt.sizeDelta.x / 2) - distanceToEdge + maxCrossSizePerLine, rt.localPosition.y);
                             }
 
 
@@ -1086,7 +1034,7 @@ public class FlexContainer : MonoBehaviour
 
                     }
                 }
-              
+
             }
         }
         if (alignContentIndex == 1)
@@ -1208,6 +1156,11 @@ public class FlexContainer : MonoBehaviour
         }
         AlignItems(row);
     }
+    /// <summary>
+    /// Determines the Alignment of each Child in their line. Called in the CrossAxisAlignment() function and is similar in how it calculates the position by using the local corners and adds the offset.
+    /// Though, instead of using the container's corners, it uses the largest cross size Child for the calculation.
+    /// </summary>
+    /// <param name="row">If Row/Row-reverse is selected, this is true. If Column/Column-reverse is selected, this is false.</param>
     public void AlignItems(bool row)
     {
         int lines = GetNumberOfLines();
@@ -1242,15 +1195,13 @@ public class FlexContainer : MonoBehaviour
                     {
                         if (row)
                         {
-                            float distanceToTop = ((largestChild.localPosition.y+ largestChildCorners[0].y) - (rt.localPosition.y+ currentChildCorners[0].y));
-                         
+                            float distanceToTop = ((largestChild.localPosition.y + largestChildCorners[0].y) - (rt.localPosition.y + currentChildCorners[0].y));
+
                             rt.localPosition = new Vector2(rt.localPosition.x, rt.localPosition.y + distanceToTop);
                         }
                         else
                         {
-                            float distanceToTop = ((largestChild.localPosition.x + largestChildCorners[2].x) - (rt.localPosition.x + currentChildCorners[2].x));
-                    Debug.Log("POGGERS");
-                            
+                            float distanceToTop = ((largestChild.localPosition.x + largestChildCorners[1].x) - (rt.localPosition.x + currentChildCorners[1].x));
                             rt.localPosition = new Vector2(rt.localPosition.x + distanceToTop, rt.localPosition.y);
                         }
                     }
@@ -1259,7 +1210,7 @@ public class FlexContainer : MonoBehaviour
                         if (row)
                         {
                             float distanceToTop = (largestChild.sizeDelta.y - rt.sizeDelta.y);
-                               Debug.Log(distanceToTop);
+                            Debug.Log(distanceToTop);
                             rt.localPosition = new Vector2(rt.localPosition.x, largestChild.localPosition.y);
                         }
                         else
@@ -1273,7 +1224,12 @@ public class FlexContainer : MonoBehaviour
             }
         }
     }
-
+    /// <summary>
+    /// Helper function that returns the size of the largest cross size of the Children in a given line.
+    /// </summary>
+    /// <param name="line">The line to check.</param>
+    /// <param name="row">If Row/Row-reverse is selected, this is true. If Column/Column-reverse is selected, this is false.</param>
+    /// <returns>Largest cross size in given line.</returns>
     public float GetMaxCrossSizePerLine(int line, bool row)
     {
         float maxCrossSize = 0;
@@ -1288,6 +1244,12 @@ public class FlexContainer : MonoBehaviour
 
         return maxCrossSize;
     }
+    /// <summary>
+    /// Helper function that returns the RectTransform of the Child with the largest cross size in a given line.
+    /// </summary>
+    /// <param name="line">The line to check</param>
+    /// <param name="row">If Row/Row-reverse is selected, this is true. If Column/Column-reverse is selected, this is false.</param>
+    /// <returns>RectTransform of the Child with the largest cross size</returns>
     public RectTransform GetMaxCrossSizeObjPerLine(int line, bool row)
     {
         float maxCrossSize = 0;
@@ -1312,6 +1274,11 @@ public class FlexContainer : MonoBehaviour
 
         return child;
     }
+    /// <summary>
+    /// Helper function for returning the max order value of a Child in a given line. Currently only used in the CalculateChildrenLines() function and likely will be replaced.
+    /// </summary>
+    /// <param name="line">The line to check</param>
+    /// <returns></returns>
     public int GetMaxOrderPerLine(int line)
     {
         int maxOrder = 0;
@@ -1328,6 +1295,10 @@ public class FlexContainer : MonoBehaviour
         }
         return maxOrder;
     }
+    /// <summary>
+    /// Super useful helper function. Returns the largest line value in the Container.
+    /// </summary>
+    /// <returns>Largest line value in Container</returns>
     public int GetNumberOfLines()
     {
         int lines = 0;
@@ -1340,7 +1311,13 @@ public class FlexContainer : MonoBehaviour
         }
         return lines;
     }
-
+    /// <summary>
+    /// Helper Function. Calculates the remaining free space in each line and takes into consideration the margins. 
+    /// This variation is specifically used in the ResolvingFlexibleLengths() function, and will likely be merged into its similar functions for simplicities sake in the future.
+    /// The difference lies in the use of the Flex Basis in the case of a Child being considered "Frozen".
+    /// </summary>
+    /// <param name="row">If Row/Row-reverse is selected, this is true. If Column/Column-reverse is selected, this is false.</param>
+    /// <returns>List of free spaces per line</returns>
     public List<float> CalculateWorldFreeSpaceList(bool row)
     {
 
@@ -1404,6 +1381,12 @@ public class FlexContainer : MonoBehaviour
 
         return freeSpacePerLine;
     }
+    /// <summary>
+    /// Helper Function. Calculates the remaining free space in each line and takes into consideration the margins. 
+    /// This variation uses the current real size of each child for the determination. 
+    /// </summary>
+    /// <param name="row">If Row/Row-reverse is selected, this is true. If Column/Column-reverse is selected, this is false.</param>
+    /// <returns>List of free spaces per line</returns>
     public List<float> CalculateWorldFreeSpaceListv2(bool row)
     {
 
@@ -1459,6 +1442,12 @@ public class FlexContainer : MonoBehaviour
 
         return freeSpacePerLine;
     }
+    /// <summary>
+    /// Helper Function. Calculates the remaining free space in each line and takes into consideration the margins. 
+    /// This variation uses the Hypothetical Main Size of each Child for its determination.
+    /// </summary>
+    /// <param name="row">If Row/Row-reverse is selected, this is true. If Column/Column-reverse is selected, this is false.</param>
+    /// <returns>List of free spaces per line</returns>
     public List<float> CalculateWorldFreeSpaceListHypo(bool row)
     {
 
@@ -1492,8 +1481,8 @@ public class FlexContainer : MonoBehaviour
             {
                 if (k.Value.LineNumber == (i + 1))
                 {
-                    if (row) freeSpacePerLine[k.Value.LineNumber - 1] = freeSpacePerLine[k.Value.LineNumber - 1] - k.Value.hypotheticalMainSize;
-                    else freeSpacePerLine[k.Value.LineNumber - 1] = freeSpacePerLine[k.Value.LineNumber - 1] - k.Value.childRect.sizeDelta.y;
+                    freeSpacePerLine[k.Value.LineNumber - 1] = freeSpacePerLine[k.Value.LineNumber - 1] - k.Value.hypotheticalMainSize;
+
                     if (flexDirectionIndex == 1 || flexDirectionIndex == 0)
                     {
                         freeSpacePerLine[k.Value.LineNumber - 1] = freeSpacePerLine[k.Value.LineNumber - 1] - k.Value.marginValues[2] - k.Value.marginValues[3];
@@ -1515,9 +1504,18 @@ public class FlexContainer : MonoBehaviour
         return freeSpacePerLine;
     }
 
-    int previousLineNumber = 1;
 
 
+    /// <summary>
+    /// Determines the line of each Child. Works by:
+    /// 1. Determine number of lines required based on each Child's Hypothetical Main Size and the container's main size
+    /// 2. Iterates through the number of lines and keeps each Child in the line unless that Child will exceed the size of the container.
+    /// 3. If a Child exceeds, the next line iteration begins and the cycle is repeated until all Children are fit.
+    /// </summary>
+    /// <param name="edge">The edge to align the Children to when moved to a new line.</param>
+    /// <param name="inset">The inset of each Child, equal to their current real main axis size.</param>
+    /// <param name="rtFirst">The first Child.</param>
+    /// <param name="row">If Row/Row-reverse is selected, this is true. If Column/Column-reverse is selected, this is false.</param>
     public void CalculateChildrenLines(RectTransform.Edge edge, float inset, RectTransform rtFirst, bool row)
     {
         float total = 0;
@@ -1581,7 +1579,7 @@ public class FlexContainer : MonoBehaviour
                     float objectSize = 0;
                     if (row) objectSize = k.Value.hypotheticalMainSize + k.Value.marginValues[2] + k.Value.marginValues[3];
                     else objectSize = k.Value.hypotheticalMainSize + k.Value.marginValues[0] + k.Value.marginValues[1];
-                    if (k.Value.childOrder == 0)
+                    if ((k.Value.childOrder == 0 && justifyContentIndex == 0) || (k.Value.childOrder == GetMaxOrderPerLine(1) && justifyContentIndex == 1))
                     {
                         continue;
                     }
