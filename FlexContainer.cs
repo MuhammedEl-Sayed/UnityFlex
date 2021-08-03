@@ -1547,82 +1547,82 @@ public class FlexContainer : MonoBehaviour
         */
 
 
-        if (numberofLines > 1)
+if (numberofLines > 1)
+{
+    float contMainSize = 0;
+    if (row) contMainSize = cont.rect.width;
+    else contMainSize = cont.rect.height;
+    float minSizeComparison = 0;
+    foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
+    {
+        if (k.Value.hypotheticalMainSize > minSizeComparison)
         {
-            float contMainSize = 0;
-            if (row) contMainSize = cont.rect.width;
-            else contMainSize = cont.rect.height;
-            float minSizeComparison = 0;
-            foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
+            minSizeComparison = k.Value.hypotheticalMainSize;
+        }
+    }
+    if (contMainSize > minSizeComparison)
+    {
+        if (row) minSizeComparison = cont.rect.width;
+        else minSizeComparison = cont.rect.height;
+    }
+    for (int i = 1; i <= roundedLines; i++)
+    {
+        float TotalPerLine = 0;
+        if (i == 1)
+        {
+            if (row) TotalPerLine = rtFirst.sizeDelta.x;
+            else TotalPerLine = rtFirst.sizeDelta.y;
+        }
+        else TotalPerLine = 0;
+        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
+        {
+            float objectSize = 0;
+            if (row) objectSize = k.Value.hypotheticalMainSize + k.Value.marginValues[2] + k.Value.marginValues[3];
+            else objectSize = k.Value.hypotheticalMainSize + k.Value.marginValues[0] + k.Value.marginValues[1];
+            if ((k.Value.childOrder == 0 && justifyContentIndex == 0) || (k.Value.childOrder == GetMaxOrderPerLine(1) && justifyContentIndex == 1))
             {
-                if (k.Value.hypotheticalMainSize > minSizeComparison)
-                {
-                    minSizeComparison = k.Value.hypotheticalMainSize;
-                }
+                continue;
             }
-            if (contMainSize > minSizeComparison)
+
+            if (!k.Value.doesFit && (objectSize + TotalPerLine <= minSizeComparison))
             {
-                if (row) minSizeComparison = cont.rect.width;
-                else minSizeComparison = cont.rect.height;
+
+                TotalPerLine += objectSize;
+                k.Value.LineNumber = i;
+                k.Value.doesFit = true;
+
             }
-            for (int i = 1; i <= roundedLines; i++)
+
+            else if (!k.Value.doesFit)
             {
-                float TotalPerLine = 0;
-                if (i == 1)
-                {
-                    if (row) TotalPerLine = rtFirst.sizeDelta.x;
-                    else TotalPerLine = rtFirst.sizeDelta.y;
-                }
-                else TotalPerLine = 0;
-                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
-                {
-                    float objectSize = 0;
-                    if (row) objectSize = k.Value.hypotheticalMainSize + k.Value.marginValues[2] + k.Value.marginValues[3];
-                    else objectSize = k.Value.hypotheticalMainSize + k.Value.marginValues[0] + k.Value.marginValues[1];
-                    if ((k.Value.childOrder == 0 && justifyContentIndex == 0) || (k.Value.childOrder == GetMaxOrderPerLine(1) && justifyContentIndex == 1))
-                    {
-                        continue;
-                    }
-
-                    if (!k.Value.doesFit && (objectSize + TotalPerLine <= minSizeComparison))
-                    {
-
-                        TotalPerLine += objectSize;
-                        k.Value.LineNumber = i;
-                        k.Value.doesFit = true;
-
-                    }
-
-                    else if (!k.Value.doesFit)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        continue;
-                    }
-
-                }
-
-                foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
-                {
-                    if (k.Value.childOrder == 0)
-                    {
-                        continue;
-                    }
-                    if (!k.Value.doesFit)
-                    {
-
-                        k.Value.LineNumber = i;
-
-
-                    }
-
-                }
+                break;
+            }
+            else
+            {
+                continue;
             }
 
         }
-        printChildrenDict();
+
+        foreach (KeyValuePair<int, FlexChildren.ChildrenData> k in childrenDict)
+        {
+            if (k.Value.childOrder == 0)
+            {
+                continue;
+            }
+            if (!k.Value.doesFit)
+            {
+
+                k.Value.LineNumber = i;
+
+
+            }
+
+        }
+    }
+
+}
+printChildrenDict();
     }
 
 
