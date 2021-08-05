@@ -87,7 +87,7 @@ public class FlexContainer : MonoBehaviour
         LineLengthDetermination();
 
 
-        MainSizeDetermination();
+        FlexBoxAlgorithm();
 
 
     }
@@ -369,7 +369,7 @@ public class FlexContainer : MonoBehaviour
     /// <summary>
     /// Checks properties that are common to different parts of the algorithm and passes them. This is the main function to be called for the algorithm and runs the different parts in order.
     /// </summary>
-    public void MainSizeDetermination()
+    public void FlexBoxAlgorithm()
     {
         bool row = true;
         if (flexDirectionIndex == 2 || flexDirectionIndex == 3)

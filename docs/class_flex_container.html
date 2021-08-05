@@ -95,12 +95,8 @@ $(document).ready(function(){initNavTree('class_flex_container.html',''); initRe
 
 <p>Contains the majority of algorithmic components. Based off of <a href="https://drafts.csswg.org/css-flexbox">https://drafts.csswg.org/css-flexbox</a>.  
  <a href="class_flex_container.html#details">More...</a></p>
-<div class="dynheader">
-Inheritance diagram for FlexContainer:</div>
-<div class="dyncontent">
- <div class="center">
-  <img src="class_flex_container.png" alt=""/>
- </div></div>
+
+<p>Inherits MonoBehaviour.</p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
@@ -116,9 +112,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a2eba2864ac69b23f127d502f744b55b6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#a2eba2864ac69b23f127d502f744b55b6">PositionItems</a> ()</td></tr>
 <tr class="memdesc:a2eba2864ac69b23f127d502f744b55b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Intial Positioning for Children with consideration of the chosen properties. The resulting position is rarely the final positioning of the Children. Then, depending on whether wrapping is enabled, the CalculateChildrenLines function is called to determine the lineNumber for each Child. This is critical for the remaining functions. See <a href="https://drafts.csswg.org/css-flexbox/#main-sizing">https://drafts.csswg.org/css-flexbox/#main-sizing</a> for more information on how this should work.  <a href="class_flex_container.html#a2eba2864ac69b23f127d502f744b55b6">More...</a><br /></td></tr>
 <tr class="separator:a2eba2864ac69b23f127d502f744b55b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a97217b90865d1c8ed101d1ef19c2b6cb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#a97217b90865d1c8ed101d1ef19c2b6cb">MainSizeDetermination</a> ()</td></tr>
-<tr class="memdesc:a97217b90865d1c8ed101d1ef19c2b6cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks properties that are common to different parts of the algorithm and passes them. This is the main function to be called for the algorithm and runs the different parts in order.  <a href="class_flex_container.html#a97217b90865d1c8ed101d1ef19c2b6cb">More...</a><br /></td></tr>
-<tr class="separator:a97217b90865d1c8ed101d1ef19c2b6cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08dced6869634726b52728f99223a506"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#a08dced6869634726b52728f99223a506">FlexBoxAlgorithm</a> ()</td></tr>
+<tr class="memdesc:a08dced6869634726b52728f99223a506"><td class="mdescLeft">&#160;</td><td class="mdescRight">Checks properties that are common to different parts of the algorithm and passes them. This is the main function to be called for the algorithm and runs the different parts in order.  <a href="class_flex_container.html#a08dced6869634726b52728f99223a506">More...</a><br /></td></tr>
+<tr class="separator:a08dced6869634726b52728f99223a506"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a37e061c45f9596b1d272bf234e1cd6cf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_flex_container.html#a37e061c45f9596b1d272bf234e1cd6cf">printChildrenDict</a> ()</td></tr>
 <tr class="memdesc:a37e061c45f9596b1d272bf234e1cd6cf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Debug function that prints specific values to the console for each Child.  <a href="class_flex_container.html#a37e061c45f9596b1d272bf234e1cd6cf">More...</a><br /></td></tr>
 <tr class="separator:a37e061c45f9596b1d272bf234e1cd6cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -410,6 +406,25 @@ Public Attributes</h2></td></tr>
 
 </div>
 </div>
+<a id="a08dced6869634726b52728f99223a506"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a08dced6869634726b52728f99223a506">&#9670;&nbsp;</a></span>FlexBoxAlgorithm()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void FlexContainer.FlexBoxAlgorithm </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Checks properties that are common to different parts of the algorithm and passes them. This is the main function to be called for the algorithm and runs the different parts in order. </p>
+
+</div>
+</div>
 <a id="a4ee49bcb643ebaa129ca63c52e135e5a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4ee49bcb643ebaa129ca63c52e135e5a">&#9670;&nbsp;</a></span>GetChildren()</h2>
 
@@ -594,25 +609,6 @@ Public Attributes</h2></td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="a97217b90865d1c8ed101d1ef19c2b6cb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a97217b90865d1c8ed101d1ef19c2b6cb">&#9670;&nbsp;</a></span>MainSizeDetermination()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void FlexContainer.MainSizeDetermination </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Checks properties that are common to different parts of the algorithm and passes them. This is the main function to be called for the algorithm and runs the different parts in order. </p>
 
 </div>
 </div>
@@ -853,7 +849,7 @@ Public Attributes</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>
-<li>FlexContainer.cs</li>
+<li>E:/UNITY PROJECTS/HowAreYouFeeling/Assets/Scripts/MenuMaker/UnityFlex/UnityFlex/FlexContainer.cs</li>
 </ul>
 </div><!-- contents -->
 </div><!-- doc-content -->
