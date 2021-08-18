@@ -4,7 +4,7 @@
   UnityFlex is an **Opensource C#** implementation of the popular and widely used **CSS Flexbox** layout algorithm. It shares many of the same customization options, [documented](https://muhammedel-sayed.github.io/FlexUnity/), and is **completely free to use**.
   
  ## How to use
-  1. Begin by downloading/(cloning)[https://github.com/MuhammedEl-Sayed/UnityFlex.git] the repository. 
+  1. Begin by downloading/[cloning](https://github.com/MuhammedEl-Sayed/UnityFlex.git) the repository. 
   2. Import the **UnityFlex** folder into your Unity Project.
   3. In your scene, create a **Canvas** UI component and set the UI Scale Mode property in the Canvas Scaler component to **Scale with screen Size**
   4. Create an **Empty Object** in your Canvas and attach the **FlexContainer** script. Be sure to tick the Root Container box.
