@@ -1,7 +1,7 @@
 # UnityFlex
 ## Background
 
-  UnityFlex is an **Opensource C#** implementation of the popular and widely used **CSS Flexbox** layout algorithm. It shares many of the same customization options, [documented](https://muhammedel-sayed.github.io/FlexUnity/), and is **completely free to use**.
+  UnityFlex is an **Opensource C#** implementation of the popular and widely used **CSS Flexbox** layout algorithm. It shares many of the same customization options, [documented](https://muhammedel-sayed.github.io/UnityFlex/), and is **completely free to use**.
   
  ## How to use
   1. Begin by downloading/[cloning](https://github.com/MuhammedEl-Sayed/UnityFlex.git) the repository. 
